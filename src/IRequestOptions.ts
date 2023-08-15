@@ -13,5 +13,9 @@ export default interface IRequestOptions {
     requestCredentials?: "omit" | "same-origin" | "include",
     cache?: {
         expiresIn: number;
+    },
+    retry?: {
+        maxRetries: number;
+        retryDelay: number;
     }
 }

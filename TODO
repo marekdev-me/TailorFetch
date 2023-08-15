@@ -1,5 +1,39 @@
-[] Add an option to specify request and response transformers
-[x] Clean up make request function, split some code into smaller functions
+Authentication Support: Add options to include authentication tokens, headers, or credentials in your requests.
 
-Important:
-    [x] Users should not be able to choose what request to make
+[x] Response Interceptors: Allow users to define response interceptors that can modify the response before it's returned.
+
+Request and Response Logging: Implement logging mechanisms to log the details of requests and responses for debugging.
+
+[x] Caching: Add caching options to store and reuse responses, reducing unnecessary network requests.
+
+Retry Mechanism: Implement automatic retry logic for failed requests with customizable retry policies.
+
+Global Configuration: Allow users to set global configuration options that apply to all requests, like default headers or timeouts.
+
+Batch Requests: Enable users to send multiple requests in a single batch and process combined responses.
+
+Progress Tracking: Provide progress tracking for large file uploads/downloads or time-consuming requests.
+
+WebSocket Support: Extend your library to handle WebSocket connections and communication.
+
+Compression: Implement automatic compression and decompression for requests and responses.
+
+CORS Handling: Provide options for handling Cross-Origin Resource Sharing (CORS) restrictions.
+
+Authorization Handling: Support different types of authorization mechanisms, such as OAuth or JWT.
+
+Multipart Form Data: Enable sending files and multipart form data in requests.
+
+Response Pagination: Implement support for paginated API responses with automatic pagination handling.
+
+Response Validation: Offer options to validate the response against a predefined schema or structure.
+
+Timeout and Retry Policies: Allow users to define custom timeout and retry policies for requests.
+
+WebSocket Integration: Add the ability to switch between WebSocket and HTTP communication seamlessly.
+
+Proxy Support: Allow users to specify a proxy server for requests.
+
+Offline Mode: Implement support for queuing requests and sending them when the device comes back online.
+
+Request Cancellation: Enhance the cancellation mechanism to support batch requests and multiple concurrent requests.

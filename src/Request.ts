@@ -39,6 +39,13 @@ export default class Request {
      */
     private response: Response | undefined = undefined;
 
+    /**
+     * Attempts count
+     *
+     * @private
+     */
+    private retryCount = 0;
+
     constructor(urlStr: string, method: string, requestOptions: IRequestOptions, signal?: AbortSignal) {
         this.urlStr = new URL(urlStr);
         this.method = method;
@@ -49,7 +56,7 @@ export default class Request {
     /**
      * Make an HTTP request to a remote URL
      */
-    async make(): Promise<Http.IncomingMessage | string> {
+    async make(): Promise<Http.IncomingMessage | string | undefined> {
 
         const requestOptionsObject: RequestInit = {
             method: this.method,
@@ -71,45 +78,62 @@ export default class Request {
             }
         }
 
-        // Make an HTTP request
-        const response = await fetch(this.urlStr, requestOptionsObject);
+        try {
+            // Make an HTTP request
+            const response = await fetch(this.urlStr, requestOptionsObject);
 
-        // Store response
-        this.response = response;
+            // Store response
+            this.response = response;
 
-        if (this.requestOptions.transformResponse) {
-            if (this.requestOptions.parseJSON) {
-                const transformedResponse = this.requestOptions.transformResponse.transform(JSON.parse(await response.text()));
+            if (this.requestOptions.transformResponse) {
+                if (this.requestOptions.parseJSON) {
+                    const transformedResponse = this.requestOptions.transformResponse.transform(JSON.parse(await response.text()));
+                    if (this.requestOptions.cache) {
+                        cache.set(cacheKey, transformedResponse, this.requestOptions.cache.expiresIn);
+                    }
+                    return transformedResponse;
+                }
+
+                const transformedResponse = this.requestOptions.transformResponse.transform(await response.text());
+
                 if (this.requestOptions.cache) {
                     cache.set(cacheKey, transformedResponse, this.requestOptions.cache.expiresIn);
                 }
+
                 return transformedResponse;
             }
 
-            const transformedResponse = this.requestOptions.transformResponse.transform(await response.text());
+            if (this.requestOptions.parseJSON && !this.requestOptions.transformResponse) {
+                const jsonResponse = JSON.parse(await response.text());
 
-            if (this.requestOptions.cache) {
-                cache.set(cacheKey, transformedResponse, this.requestOptions.cache.expiresIn);
+                if (this.requestOptions.cache) {
+                    cache.set(cacheKey, jsonResponse, this.requestOptions.cache.expiresIn);
+                }
+
+                return jsonResponse;
             }
 
-            return transformedResponse;
-        }
-
-        if (this.requestOptions.parseJSON && !this.requestOptions.transformResponse) {
-            const jsonResponse = JSON.parse(await response.text());
-
             if (this.requestOptions.cache) {
-                cache.set(cacheKey, jsonResponse, this.requestOptions.cache.expiresIn);
+                cache.set(cacheKey, response.text(), this.requestOptions.cache.expiresIn);
             }
 
-            return jsonResponse;
+            return response.text();
+
+        } catch (error) {
+            if (this.requestOptions.retry) {
+                if (this.retryCount < this.requestOptions.retry.maxRetries) {
+                    await this.sleep(this.requestOptions.retry.retryDelay || 0);
+                    this.retryCount++;
+                    return this.make();
+                }
+            }
         }
 
-        if (this.requestOptions.cache) {
-            cache.set(cacheKey, response.text(), this.requestOptions.cache.expiresIn);
-        }
+        return undefined;
+    }
 
-        return response.text();
+    private sleep(delay: number): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, delay));
     }
 
     /**
