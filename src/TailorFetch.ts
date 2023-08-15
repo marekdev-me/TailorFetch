@@ -1,94 +1,7 @@
 import IRequestOptions from "./IRequestOptions";
-import http, {
-    IncomingMessage,
-    RequestOptions as HttpRequestOptions
-} from 'http';
-import https from 'https';
+import Request from "./Request";
 
 export default class TailorFetch {
-
-    private static async makeRequest(urlStr: string, method: string,  options: IRequestOptions): Promise<unknown> {
-        const { headers, queryParams, timeout, parseJSON, transformResponse, data } = options;
-
-        // Parse URL
-        const url= new URL(urlStr);
-
-        // Handle query parameters
-        if (queryParams) {
-            for (const key in queryParams) {
-                url.searchParams.append(key, queryParams[key]);
-            }
-        }
-
-        // Handle request data
-        const requestBody = data ? JSON.stringify(data) : undefined;
-
-        // Handle request headers
-        const requestOptions: HttpRequestOptions = {
-            method,
-            headers: {
-                ...(headers || {}),
-                'Content-Type': requestBody ? 'application/json' : 'application/octet-stream',
-                'Content-Length': requestBody ? Buffer.byteLength(requestBody) : 0,
-            },
-            timeout
-        }
-
-        const httpModule = url.protocol === 'https:' ? https : http;
-
-        return new Promise((resolve, reject) => {
-            const req = httpModule.request(url.toString(), requestOptions, (res: IncomingMessage) => {
-                let responseData = "";
-
-                res.on('data', (chunk: string) => {
-                   responseData += chunk;
-                });
-
-                res.on('end', () => {
-                   if (parseJSON) {
-                       try {
-                           const jsonData = JSON.parse(responseData);
-
-                           if (transformResponse) {
-                               const transformedResponse = transformResponse.transform(jsonData);
-                               resolve(transformedResponse);
-                           }
-
-                           resolve(jsonData);
-                       } catch (error) {
-                           reject(error);
-                       }
-                   }
-
-                   if (transformResponse) {
-                       const transformedResponse = transformResponse.transform(responseData);
-                       resolve(transformedResponse);
-                   }
-
-                   if (!parseJSON || !transformResponse) {
-                       resolve(responseData);
-                   }
-                });
-            });
-
-            req.on('error', (error) => {
-               reject(error);
-            });
-
-            if (requestBody) {
-                req.write(requestBody);
-            }
-
-            if (timeout) {
-                req.setTimeout(timeout, () => {
-                   req.destroy();
-                   reject(new Error('Request timed out'));
-                });
-            }
-
-            req.end();
-        });
-    }
 
     /**
      * Make an HTTP GET request
@@ -97,9 +10,12 @@ export default class TailorFetch {
      * @param options {IRequestOptions} Request options to add to request
      */
     static async GET(urlStr: string, options: IRequestOptions): Promise<any> {
+        const request = new Request(urlStr, 'GET', { ...options });
+
         return {
-            data: await this.makeRequest(urlStr, 'GET', { ...options }),
-            config: options
+            data: await request.make(),
+            config: options,
+            request
         }
     }
 
@@ -111,9 +27,12 @@ export default class TailorFetch {
      * @param options {IRequestOptions} Request options to add to request
      */
     static async POST(urlStr: string, options: IRequestOptions): Promise<any> {
+        const request = new Request(urlStr, 'POST', { ...options });
+
         return {
-            data: await this.makeRequest(urlStr, 'POST', { ...options }),
-            config: options
+            data: await request.make(),
+            config: options,
+            request
         }
     }
 
@@ -124,7 +43,13 @@ export default class TailorFetch {
      * @param options {IRequestOptions} Request options to add to request
      */
     static async PUT(urlStr: string, options: IRequestOptions): Promise<any> {
-        return this.makeRequest(urlStr, 'PUT', { ...options });
+        const request = new Request(urlStr, 'PUT', { ...options });
+
+        return {
+            data: await request.make(),
+            config: options,
+            request
+        }
     }
 
     /**
@@ -135,7 +60,13 @@ export default class TailorFetch {
      * @constructor
      */
     static async PATCH(urlStr: string, options: IRequestOptions): Promise<any> {
-        return this.makeRequest(urlStr, 'PATCH', { ...options });
+        const request = new Request(urlStr, 'PATCH', { ...options });
+
+        return {
+            data: await request.make(),
+            config: options,
+            request
+        }
     }
 
     /**
@@ -145,10 +76,16 @@ export default class TailorFetch {
      * @param options {IRequestOptions} Options to add to request
      */
     static async DELETE(urlStr: string, options: IRequestOptions): Promise<any> {
-        return this.makeRequest(urlStr, 'DELETE', { ...options });
+        const request = new Request(urlStr, 'DELETE', { ...options });
+
+        return {
+            data: await request.make(),
+            config: options,
+            request
+        }
     }
 
     static async OPTIONS(): Promise<any> {
-
+        throw new Error("Not yet implemented");
     }
 }

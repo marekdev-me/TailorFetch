@@ -1,5 +1,5 @@
 [] Add an option to specify request and response transformers
-[] Clean up make request function, split some code into smaller functions
+[x] Clean up make request function, split some code into smaller functions
 
 Important:
-    [] Users should not be able to choose what request to make
+    [x] Users should not be able to choose what request to make
