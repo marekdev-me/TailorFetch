@@ -1,0 +1,23 @@
+{
+  "name": "tailorfetch",
+  "version": "1.2.0",
+  "description": "TailorFetch is a lightweight Node.js library for making HTTP requests with customizable options and response transformations.",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "npm run clean && npm run build:esm",
+    "build:esm": "tsc",
+    "build:cjs": "tsc --module CommonJS --outdir lib/cjs",
+    "prepare": "npm run build",
+    "updateLink": "npm run clean && tsc && npm rm lib -g && npm link",
+    "clean": "if exist lib ( rd /S /Q lib)"
+  },
+  "files": [
+    "lib"
+  ],
+  "keywords": [],
+  "author": "Marek Dev",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.4.9"
+  }
+}
