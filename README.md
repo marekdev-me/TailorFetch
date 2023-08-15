@@ -65,7 +65,13 @@ TailorFetch.POST(url, options)
  - `queryParams`: An object containing query parameters for the URL.
  - `timeout`: The request timeout in milliseconds.
  - `parseJSON`: Set to `true` to parse the response as JSON.
+ - `body`: Data to be sent to remote server
  - `transformResponse`: A custom response transformer.
+ - `requestMode`
+ - `requestCache`
+ - `requestCredentials`
+ - `cache`:
+   - `expiresIn`: How long should cache be valid for (milliseconds)
 
 ## Custom Transformers
 
