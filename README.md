@@ -72,6 +72,9 @@ TailorFetch.POST(url, options)
  - `requestCredentials`
  - `cache`:
    - `expiresIn`: How long should cache be valid for (milliseconds)
+ - `retry`:
+   - `maxRetries`: Maximum number of times to attempt to make an HTTP request
+   - `retryDelay`: Number of milliseconds to wait between attempts
 
 ## Custom Transformers
 
