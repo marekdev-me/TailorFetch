@@ -87,14 +87,14 @@ export default class Request {
 
             if (this.requestOptions.transformResponse) {
                 if (this.requestOptions.parseJSON) {
-                    const transformedResponse = this.requestOptions.transformResponse.transform(JSON.parse(await response.text()));
+                    const transformedResponse = this.requestOptions.transformResponse.transform(JSON.parse(await response.text()), this.requestOptions);
                     if (this.requestOptions.cache) {
                         cache.set(cacheKey, transformedResponse, this.requestOptions.cache.expiresIn);
                     }
                     return transformedResponse;
                 }
 
-                const transformedResponse = this.requestOptions.transformResponse.transform(await response.text());
+                const transformedResponse = this.requestOptions.transformResponse.transform(await response.text(), this.requestOptions);
 
                 if (this.requestOptions.cache) {
                     cache.set(cacheKey, transformedResponse, this.requestOptions.cache.expiresIn);

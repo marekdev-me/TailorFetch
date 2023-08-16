@@ -1,5 +1,6 @@
 import IRequestOptions from "./IRequestOptions";
 import Request from "./Request";
+import Response from "./Response";
 
 export default class TailorFetch {
 
