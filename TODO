@@ -6,20 +6,23 @@
 
 [x] Retry Mechanism: Implement automatic retry logic for failed requests with customizable retry policies.
 
-[] Progress Tracking: Provide progress tracking for large file uploads/downloads or time-consuming requests.
+[x] Multipart Form Data: Enable sending files and multipart form data in requests.
 
-[] Compression: Implement automatic compression and decompression for requests and responses.
+==========================
+[] Progress Tracking: Provide progress tracking for large file uploads/downloads or time-consuming requests.
 
 [] CORS Handling: Provide options for handling Cross-Origin Resource Sharing (CORS) restrictions.
 
-[x] Multipart Form Data: Enable sending files and multipart form data in requests.
+[] Offline Mode: Implement support for queuing requests and sending them when the device comes back online.
+
+==========================
+
+[] Compression: Implement automatic compression and decompression for requests and responses.
 
 [] Response Pagination: Implement support for paginated API responses with automatic pagination handling.
 
 [] Response Validation: Offer options to validate the response against a predefined schema or structure.
 
 [] Proxy Support: Allow users to specify a proxy server for requests.
-
-[] Offline Mode: Implement support for queuing requests and sending them when the device comes back online.
 
 [] Request Cancellation: Enhance the cancellation mechanism to support batch requests and multiple concurrent requests.

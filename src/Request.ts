@@ -1,6 +1,7 @@
 import IRequestOptions from "./IRequestOptions";
 import Cache from "./Cache";
 import TailorResponse from "./Response";
+import {read} from "fs";
 
 export default class Request {
 
@@ -72,6 +73,36 @@ export default class Request {
             // Make an HTTP request
             this.response = await fetch(this.urlStr, requestOptionsObject);
 
+            if (this.requestOptions.onProgress && this.response.body) {
+                const reader = this.response.body.getReader();
+                const contentLength = Number(this.response.headers.get('content-length')) | 0;
+
+                let loadedBytes = 0;
+                const requestOptions = this.requestOptions;
+
+                const body = new ReadableStream({
+                  async start(controller) {
+                      while (true) {
+                          const { done, value } = await reader.read();
+
+                          if (done) {
+                              controller.close();
+                              break;
+                          }
+
+                          loadedBytes += value?.length || 0;
+                          if (requestOptions.onProgress) {
+                              requestOptions.onProgress(loadedBytes, contentLength);
+                          }
+
+                          controller.enqueue(value);
+                      }
+                  }
+                });
+
+                return await this.handleReadableStreamResponse(body);
+            }
+
             // Handle response
             return await this.handleResponse(this.response);
 
@@ -86,6 +117,44 @@ export default class Request {
         }
 
         return undefined;
+    }
+
+    /**
+     * Handle Readable Stream response
+     *
+     * @param response {ReadableStream<any>} Readable stream to read
+     *
+     * @private
+     */
+    private async handleReadableStreamResponse(response: ReadableStream<any>): Promise<TailorResponse> {
+        let transformedResponse;
+        let responseAsString = await this.readResponseBodyAsString(response);
+
+        if (this.requestOptions.transformResponse) {
+            if (this.requestOptions.parseJSON) {
+                const parsedResponse = JSON.parse(responseAsString);
+                transformedResponse = this.requestOptions.transformResponse.transform(parsedResponse, this.requestOptions);
+                return new TailorResponse(transformedResponse, this.response?.status, this.response?.statusText, this.requestOptions.headers, this.requestOptions);
+            }
+            transformedResponse = this.requestOptions.transformResponse.transform(responseAsString, this.requestOptions);
+            return new TailorResponse(transformedResponse, this.response?.status, this.response?.statusText, this.requestOptions.headers, this.requestOptions);
+        }
+
+        return new TailorResponse(responseAsString, this.response?.status, this.response?.statusText, this.requestOptions.headers, this.requestOptions);
+    }
+
+    private async readResponseBodyAsString(body: ReadableStream<any>): Promise<string> {
+        const reader = body.getReader();
+        let text = '';
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            text += new TextDecoder().decode(value);
+        }
+
+        return text;
     }
 
     /**

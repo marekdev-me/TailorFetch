@@ -17,5 +17,6 @@ export default interface IRequestOptions {
     retry?: {
         maxRetries: number;
         retryDelay: number;
-    }
+    },
+    onProgress?: (loaded: number, total: number) => void;
 }
