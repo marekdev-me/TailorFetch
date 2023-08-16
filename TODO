@@ -9,13 +9,12 @@
 [x] Multipart Form Data: Enable sending files and multipart form data in requests.
 
 ==========================
-[] Progress Tracking: Provide progress tracking for large file uploads/downloads or time-consuming requests.
-
-[] CORS Handling: Provide options for handling Cross-Origin Resource Sharing (CORS) restrictions.
+[x] Progress Tracking: Provide progress tracking for large file uploads/downloads or time-consuming requests. (NOTE: Not yet tested the progress reporting)
 
 [] Offline Mode: Implement support for queuing requests and sending them when the device comes back online.
 
 ==========================
+[] CORS Handling: Provide options for handling Cross-Origin Resource Sharing (CORS) restrictions.
 
 [] Compression: Implement automatic compression and decompression for requests and responses.
 

@@ -70,6 +70,7 @@ TailorFetch.POST(url, options)
  - `requestMode`
  - `requestCache`
  - `requestCredentials`
+ - -`onProgress`: Callback function for progress reporting
  - `cache`:
    - `expiresIn`: How long should cache be valid for (milliseconds)
  - `retry`:
@@ -81,23 +82,25 @@ TailorFetch.POST(url, options)
 You can define a custom response transformer by extending the `BaseTransform` class and overriding the ``transform` method.
 
 ```typescript
-class MyTransformer extends TailorFetch.BaseTransform {
-  transform(responseData) {
-    // Custom transformation logic
-    return transformedData;
-  }
+import {BaseTransform, IRequestOptions} from 'tailorfetch';
+
+class MyTransformer extends BaseTransform {
+   transform(responseData: string | ReadableStream<any>, requestOptions: IRequestOptions) {
+      // Custom transformation logic
+      return transformedData;
+   }
 }
 
 const options = {
-    transformResponse: new MyTransformer(),
+   transformResponse: new MyTransformer(),
 };
 
 TailorFetch.GET(url, options)
-  .then(response => {
-    console.log('Transformed Response:', response);
-  })
-  .catch(error => {
-    console.error('Error:', error);
-  });
+        .then(response => {
+           console.log('Transformed Response:', response);
+        })
+        .catch(error => {
+           console.error('Error:', error);
+        });
 
 ```
