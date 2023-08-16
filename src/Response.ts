@@ -1,23 +1,32 @@
-export default class Response {
+import IRequestOptions from "./IRequestOptions";
+
+export default class TailorResponse {
 
     public data: any;
 
-    public status: number;
+    public status: number | undefined;
 
-    public statusText: string;
+    public statusText: string | undefined;
 
-    public headers: any;
+    public headers: {[key: string]: string};
 
-    public config: any;
+    public config: IRequestOptions;
 
-    public request: any;
-
-    constructor(data: any, status: number, statusText: string, headers: any, config: any, request: any) {
+    constructor(data: any, status: number | undefined, statusText: string | undefined, headers: any, config: IRequestOptions) {
         this.data = data;
         this.status = status;
         this.statusText = statusText;
         this.headers = headers;
         this.config = config;
-        this.request = request;
+    }
+
+    toObject() {
+        return {
+            data: this.data,
+            status: this.status,
+            statusText: this.statusText,
+            headers: this.headers,
+            config: this.config,
+        }
     }
 }

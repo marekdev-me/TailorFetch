@@ -1,6 +1,6 @@
 import IRequestOptions from "./IRequestOptions";
 import Request from "./Request";
-import Response from "./Response";
+import TailorResponse from "./Response";
 
 export default class TailorFetch {
 
@@ -13,11 +13,7 @@ export default class TailorFetch {
     static async GET(urlStr: string, options: IRequestOptions): Promise<any> {
         const request = new Request(urlStr, 'GET', { ...options });
 
-        return {
-            data: await request.make(),
-            config: options,
-            request
-        }
+        return await request.make();
     }
 
 
@@ -30,11 +26,7 @@ export default class TailorFetch {
     static async POST(urlStr: string, options: IRequestOptions): Promise<any> {
         const request = new Request(urlStr, 'POST', { ...options });
 
-        return {
-            data: await request.make(),
-            config: options,
-            request
-        }
+        return await request.make();
     }
 
     /**
@@ -46,11 +38,7 @@ export default class TailorFetch {
     static async PUT(urlStr: string, options: IRequestOptions): Promise<any> {
         const request = new Request(urlStr, 'PUT', { ...options });
 
-        return {
-            data: await request.make(),
-            config: options,
-            request
-        }
+        return await request.make();
     }
 
     /**
@@ -60,14 +48,10 @@ export default class TailorFetch {
      * @param options {IRequestOptions} Options to make request to
      * @constructor
      */
-    static async PATCH(urlStr: string, options: IRequestOptions): Promise<any> {
+    static async PATCH(urlStr: string, options: IRequestOptions): Promise<TailorResponse | undefined> {
         const request = new Request(urlStr, 'PATCH', { ...options });
 
-        return {
-            data: await request.make(),
-            config: options,
-            request
-        }
+        return await request.make();
     }
 
     /**
@@ -79,11 +63,7 @@ export default class TailorFetch {
     static async DELETE(urlStr: string, options: IRequestOptions): Promise<any> {
         const request = new Request(urlStr, 'DELETE', { ...options });
 
-        return {
-            data: await request.make(),
-            config: options,
-            request
-        }
+        return await request.make();
     }
 
     static async OPTIONS(): Promise<any> {

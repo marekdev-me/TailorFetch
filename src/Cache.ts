@@ -1,3 +1,5 @@
+import IRequestOptions from "./IRequestOptions";
+
 class Cache {
 
     private cache: { [key: string]: { value: any; expires: number; }; } | undefined;
@@ -30,6 +32,22 @@ class Cache {
         if (this.cache) {
             this.cache[key] = {value, expires};
         }
+    }
+
+    /**
+     * Generate a new cache key when cache option is used on request
+     *
+     * @param method {string} HTTP method used for request
+     * @param url {string} Url used to make a request to remote server
+     * @param options {IRequestOptions} Request options attached to request
+     *
+     * @private
+     */
+     generateCacheKey(method: string, url: string, options: IRequestOptions): string {
+        const { headers, queryParams } = options;
+
+        // Create a unique key
+        return `${method}:${url}:${JSON.stringify(headers)}:${JSON.stringify(queryParams)}`;
     }
 }
 

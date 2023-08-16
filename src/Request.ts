@@ -1,6 +1,6 @@
-import * as Http from "http";
 import IRequestOptions from "./IRequestOptions";
-import cache from "./Cache";
+import Cache from "./Cache";
+import TailorResponse from "./Response";
 
 export default class Request {
 
@@ -23,7 +23,7 @@ export default class Request {
      *
      * @private
      */
-    private requestOptions: IRequestOptions;
+    private readonly requestOptions: IRequestOptions;
 
     /**
      * Signal to be used for cancellation
@@ -56,7 +56,7 @@ export default class Request {
     /**
      * Make an HTTP request to a remote URL
      */
-    async make(): Promise<Http.IncomingMessage | string | undefined> {
+    async make(): Promise<TailorResponse | undefined> {
 
         const requestOptionsObject: RequestInit = {
             method: this.method,
@@ -68,56 +68,12 @@ export default class Request {
             signal: this.abortSignal
         }
 
-        // Generate the cache key
-        const cacheKey = this.generateCacheKey(this.method, this.urlStr.toString(), this.requestOptions);
-
-        if (this.method === 'GET') {
-            const cacheResponse = cache.get(cacheKey);
-            if (cacheResponse) {
-                return cacheResponse;
-            }
-        }
-
         try {
             // Make an HTTP request
-            const response = await fetch(this.urlStr, requestOptionsObject);
+            this.response = await fetch(this.urlStr, requestOptionsObject);
 
-            // Store response
-            this.response = response;
-
-            if (this.requestOptions.transformResponse) {
-                if (this.requestOptions.parseJSON) {
-                    const transformedResponse = this.requestOptions.transformResponse.transform(JSON.parse(await response.text()), this.requestOptions);
-                    if (this.requestOptions.cache) {
-                        cache.set(cacheKey, transformedResponse, this.requestOptions.cache.expiresIn);
-                    }
-                    return transformedResponse;
-                }
-
-                const transformedResponse = this.requestOptions.transformResponse.transform(await response.text(), this.requestOptions);
-
-                if (this.requestOptions.cache) {
-                    cache.set(cacheKey, transformedResponse, this.requestOptions.cache.expiresIn);
-                }
-
-                return transformedResponse;
-            }
-
-            if (this.requestOptions.parseJSON && !this.requestOptions.transformResponse) {
-                const jsonResponse = JSON.parse(await response.text());
-
-                if (this.requestOptions.cache) {
-                    cache.set(cacheKey, jsonResponse, this.requestOptions.cache.expiresIn);
-                }
-
-                return jsonResponse;
-            }
-
-            if (this.requestOptions.cache) {
-                cache.set(cacheKey, response.text(), this.requestOptions.cache.expiresIn);
-            }
-
-            return response.text();
+            // Handle response
+            return await this.handleResponse(this.response);
 
         } catch (error) {
             if (this.requestOptions.retry) {
@@ -132,6 +88,68 @@ export default class Request {
         return undefined;
     }
 
+    /**
+     * Handle incoming HTTP request
+     *
+     * @param response { Response } HTTP response received from remote server
+     *
+     * @private
+     */
+    private async handleResponse(response: Response): Promise<TailorResponse> {
+
+        // Generate the cache key
+        const cacheKey = Cache.generateCacheKey(this.method, this.urlStr.toString(), this.requestOptions);
+
+        if (this.method === 'GET') {
+            const cacheResponse = Cache.get(cacheKey);
+            if (cacheResponse) {
+                return cacheResponse;
+            }
+        }
+
+        if (this.requestOptions.transformResponse) {
+            if (this.requestOptions.parseJSON) {
+                const transformedResponse = this.requestOptions.transformResponse.transform(JSON.parse(await response.text()), this.requestOptions);
+                if (this.requestOptions.cache) {
+                    Cache.set(cacheKey, transformedResponse, this.requestOptions.cache.expiresIn);
+                }
+                return new TailorResponse(transformedResponse, this.response?.status, this.response?.statusText, this.requestOptions.headers, this.requestOptions);
+            }
+
+            const transformedResponse = this.requestOptions.transformResponse.transform(await response.text(), this.requestOptions);
+
+            if (this.requestOptions.cache) {
+                Cache.set(cacheKey, transformedResponse, this.requestOptions.cache.expiresIn);
+            }
+
+            return new TailorResponse(transformedResponse, this.response?.status, this.response?.statusText, this.requestOptions.headers, this.requestOptions);
+        }
+
+        if (this.requestOptions.parseJSON && !this.requestOptions.transformResponse) {
+            const jsonResponse = JSON.parse(await response.text());
+
+            if (this.requestOptions.cache) {
+                Cache.set(cacheKey, jsonResponse, this.requestOptions.cache.expiresIn);
+            }
+
+            return new TailorResponse(jsonResponse, this.response?.status, this.response?.statusText, this.requestOptions.headers, this.requestOptions);
+        }
+
+        if (this.requestOptions.cache) {
+            Cache.set(cacheKey, response.text(), this.requestOptions.cache.expiresIn);
+        }
+
+        return new TailorResponse(response.text(), this.response?.status, this.response?.statusText, this.requestOptions.headers, this.requestOptions);
+    }
+
+
+    /**
+     * Delay request when attempting after failed request
+     *
+     * @param delay { number } Number of milliseconds to sleep for
+     *
+     * @private
+     */
     private sleep(delay: number): Promise<void> {
         return new Promise(resolve => setTimeout(resolve, delay));
     }
@@ -153,12 +171,5 @@ export default class Request {
           return requestHeaders;
         }
         return requestHeaders;
-    }
-
-    private generateCacheKey(method: string, url: string, options: IRequestOptions): string {
-        const { headers, queryParams } = options;
-
-        // Create a unique key
-        return `${method}:${url}:${JSON.stringify(headers)}:${JSON.stringify(queryParams)}`;
     }
 }
