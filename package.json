@@ -19,5 +19,8 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.4.9"
+  },
+  "dependencies": {
+    "redis": "^4.6.7"
   }
 }

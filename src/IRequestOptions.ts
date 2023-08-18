@@ -1,5 +1,8 @@
 import BaseTransform from "./BaseTransform";
 import {BufferSource} from "stream/web";
+import {createClient} from 'redis';
+
+type redisClient = ReturnType<typeof createClient>;
 
 export default interface IRequestOptions {
     headers?: {[key: string]: string};
@@ -13,6 +16,7 @@ export default interface IRequestOptions {
     requestCredentials?: "omit" | "same-origin" | "include",
     cache?: {
         expiresIn: number;
+        redisClient?: redisClient
     },
     retry?: {
         maxRetries: number;
