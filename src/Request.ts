@@ -169,8 +169,7 @@ export default class Request {
         const cacheKey = Cache.generateCacheKey(this.method, this.urlStr.toString(), this.requestOptions);
 
         if (this.method === 'GET') {
-            const cacheResponse = Cache.get(cacheKey);
-            console.log(cacheKey);
+            const cacheResponse = await Cache.get(cacheKey, this.requestOptions);
             if (cacheResponse) {
                 return new TailorResponse(cacheResponse, this.response?.status, this.response?.statusText, this.requestOptions.headers, this.requestOptions, true);
             }
@@ -180,7 +179,7 @@ export default class Request {
             if (this.requestOptions.parseJSON) {
                 const transformedResponse = this.requestOptions.transformResponse.transform(JSON.parse(await response.text()), this.requestOptions);
                 if (this.requestOptions.cache) {
-                    Cache.set(cacheKey, transformedResponse, this.requestOptions.cache.expiresIn);
+                    Cache.set(cacheKey, transformedResponse, this.requestOptions, this.requestOptions.cache.expiresIn);
                 }
                 return new TailorResponse(transformedResponse, this.response?.status, this.response?.statusText, this.requestOptions.headers, this.requestOptions);
             }
@@ -188,7 +187,7 @@ export default class Request {
             const transformedResponse = this.requestOptions.transformResponse.transform(await response.text(), this.requestOptions);
 
             if (this.requestOptions.cache) {
-                Cache.set(cacheKey, transformedResponse, this.requestOptions.cache.expiresIn);
+                Cache.set(cacheKey, transformedResponse, this.requestOptions, this.requestOptions.cache.expiresIn);
             }
 
             return new TailorResponse(transformedResponse, this.response?.status, this.response?.statusText, this.requestOptions.headers, this.requestOptions);
@@ -198,14 +197,14 @@ export default class Request {
             const jsonResponse = JSON.parse(await response.text());
 
             if (this.requestOptions.cache) {
-                Cache.set(cacheKey, jsonResponse, this.requestOptions.cache.expiresIn);
+                Cache.set(cacheKey, jsonResponse, this.requestOptions, this.requestOptions.cache.expiresIn);
             }
 
             return new TailorResponse(jsonResponse, this.response?.status, this.response?.statusText, this.requestOptions.headers, this.requestOptions);
         }
 
         if (this.requestOptions.cache) {
-            Cache.set(cacheKey, response.text(), this.requestOptions.cache.expiresIn);
+            Cache.set(cacheKey, response.text(), this.requestOptions,  this.requestOptions.cache.expiresIn);
         }
 
         return new TailorResponse(response.text(), this.response?.status, this.response?.statusText, this.requestOptions.headers, this.requestOptions);

@@ -8,11 +8,21 @@ class Cache {
      * Get an HTTP request cache entry
      *
      * @param key {string} Key to retrieve
+     * @param options {IRequestOptions} Request options
      */
-    get(key: string): any {
-        const entry= this.cache[key];
-        if (entry && entry.expires > Date.now()) {
-            return entry.value;
+    async get(key: string, options: IRequestOptions): Promise<string|undefined> {
+        if (options.cache) {
+            if (options.cache.redisClient && options.cache.redisClient.isOpen) {
+                const value = await options.cache.redisClient.get(key);
+                return value ?? undefined;
+            }
+
+            if (!options.cache.redisClient) {
+                const entry= this.cache[key];
+                if (entry && entry.expires > Date.now()) {
+                    return entry.value;
+                }
+            }
         }
         return undefined;
     }
@@ -22,11 +32,21 @@ class Cache {
      *
      * @param key {string} Key to set value to
      * @param value {any} Value to set
+     * @param options {IRequestOptions} Request Options
      * @param expiresInMilliseconds {number} Number to milliseconds
      */
-    set(key: string, value: any, expiresInMilliseconds: number = 0): void {
+    set(key: string, value: any, options: IRequestOptions, expiresInMilliseconds: number = 0): void {
         const expires = expiresInMilliseconds > 0 ? Date.now() + expiresInMilliseconds : Number.MAX_SAFE_INTEGER;
-        this.cache[key] = {value, expires};
+
+        if (options.cache) {
+            if (options.cache.redisClient && options.cache.redisClient.isOpen) {
+                options.cache.redisClient.set(key, JSON.stringify(value), { PX: expiresInMilliseconds });
+            }
+
+            if (!options.cache.redisClient) {
+                this.cache[key] = {value, expires};
+            }
+        }
     }
 
     /**
