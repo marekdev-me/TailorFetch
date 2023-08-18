@@ -12,12 +12,15 @@ export default class TailorResponse {
 
     public config: IRequestOptions;
 
-    constructor(data: any, status: number | undefined, statusText: string | undefined, headers: any, config: IRequestOptions) {
+    public isCached: boolean;
+
+    constructor(data: any, status: number | undefined, statusText: string | undefined, headers: any, config: IRequestOptions, isCached: boolean = false) {
         this.data = data;
         this.status = status;
         this.statusText = statusText;
         this.headers = headers;
         this.config = config;
+        this.isCached = isCached;
     }
 
     toObject() {

@@ -2,7 +2,7 @@ import IRequestOptions from "./IRequestOptions";
 
 class Cache {
 
-    private cache: { [key: string]: { value: any; expires: number; }; } | undefined;
+    private readonly cache: { [key: string]: { value: any; expires: number; }; } = {};
 
     /**
      * Get an HTTP request cache entry
@@ -10,12 +10,9 @@ class Cache {
      * @param key {string} Key to retrieve
      */
     get(key: string): any {
-        if (this.cache) {
-            const entry= this.cache[key];
-            if (entry && entry.expires > Date.now()) {
-                return entry.value;
-            }
-            return undefined;
+        const entry= this.cache[key];
+        if (entry && entry.expires > Date.now()) {
+            return entry.value;
         }
         return undefined;
     }
@@ -29,9 +26,7 @@ class Cache {
      */
     set(key: string, value: any, expiresInMilliseconds: number = 0): void {
         const expires = expiresInMilliseconds > 0 ? Date.now() + expiresInMilliseconds : Number.MAX_SAFE_INTEGER;
-        if (this.cache) {
-            this.cache[key] = {value, expires};
-        }
+        this.cache[key] = {value, expires};
     }
 
     /**
@@ -44,10 +39,8 @@ class Cache {
      * @private
      */
      generateCacheKey(method: string, url: string, options: IRequestOptions): string {
-        const { headers, queryParams } = options;
-
         // Create a unique key
-        return `${method}:${url}:${JSON.stringify(headers)}:${JSON.stringify(queryParams)}`;
+        return `${method}:${url}:${JSON.stringify(options.headers)}:${JSON.stringify(options.queryParams)}`;
     }
 }
 

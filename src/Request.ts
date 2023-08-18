@@ -1,7 +1,6 @@
 import IRequestOptions from "./IRequestOptions";
 import Cache from "./Cache";
 import TailorResponse from "./Response";
-import {read} from "fs";
 
 export default class Request {
 
@@ -126,7 +125,7 @@ export default class Request {
      *
      * @private
      */
-    private async handleReadableStreamResponse(response: ReadableStream<any>): Promise<TailorResponse> {
+    private async handleReadableStreamResponse(response: ReadableStream): Promise<TailorResponse> {
         let transformedResponse;
         let responseAsString = await this.readResponseBodyAsString(response);
 
@@ -143,7 +142,7 @@ export default class Request {
         return new TailorResponse(responseAsString, this.response?.status, this.response?.statusText, this.requestOptions.headers, this.requestOptions);
     }
 
-    private async readResponseBodyAsString(body: ReadableStream<any>): Promise<string> {
+    private async readResponseBodyAsString(body: ReadableStream): Promise<string> {
         const reader = body.getReader();
         let text = '';
 
@@ -171,8 +170,9 @@ export default class Request {
 
         if (this.method === 'GET') {
             const cacheResponse = Cache.get(cacheKey);
+            console.log(cacheKey);
             if (cacheResponse) {
-                return cacheResponse;
+                return new TailorResponse(cacheResponse, this.response?.status, this.response?.statusText, this.requestOptions.headers, this.requestOptions, true);
             }
         }
 
