@@ -13,6 +13,7 @@ npm install tailorfetch
  - Flexible options for headers, query parameters, timeouts, and more
  - Ability to transform response data using custom transformers
  - Easy-to-use interface for handling common use cases
+ - Enables use of Redis caching
 
 ## Usage
 ### Making GET Request
@@ -73,13 +74,37 @@ TailorFetch.POST(url, options)
  - -`onProgress`: Callback function for progress reporting
  - `cache`:
    - `expiresIn`: How long should cache be valid for (milliseconds)
+   - `redisClient`: Redis client
  - `retry`:
    - `maxRetries`: Maximum number of times to attempt to make an HTTP request
    - `retryDelay`: Number of milliseconds to wait between attempts
 
+## Redis Cache
+You can use Redis cache with GET requests by supplying Redis client to request cache options as follows
+
+```typescript
+import TailorFetch from 'tailorfetch';
+import { createClient } from 'redis';
+
+const client = createClient();
+
+client.on('error', (error) => console.log(error));
+
+client.connect();
+
+const response = await TailorFetch.GET('https://dummyjson.com/products/1', {
+    parseJSON: true, 
+    transformResponse: new ProductTransformer(), 
+    cache: {
+      expiresIn: 600000,
+      redisClient: client
+    }
+});
+```
+
 ## Custom Transformers
 
-You can define a custom response transformer by extending the `BaseTransform` class and overriding the ``transform` method.
+You can define a custom response transformer by extending the `BaseTransform` class and overriding the `transform` method.
 
 ```typescript
 import {BaseTransform, IRequestOptions} from 'tailorfetch';
