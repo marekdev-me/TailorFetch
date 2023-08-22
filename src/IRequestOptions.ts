@@ -22,5 +22,10 @@ export default interface IRequestOptions {
         maxRetries: number;
         retryDelay: number;
     },
+    auth?: {
+        type: 'basic' | 'digest',
+        username: string,
+        password: string,
+    },
     onProgress?: (loaded: number, total: number) => void;
 }

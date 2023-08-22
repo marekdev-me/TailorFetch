@@ -115,7 +115,7 @@ export default class Request {
             }
         }
 
-        return undefined;
+        return new TailorResponse(undefined, this.response, this.requestOptions, false);
     }
 
     /**
@@ -133,13 +133,18 @@ export default class Request {
             if (this.requestOptions.parseJSON) {
                 const parsedResponse = JSON.parse(responseAsString);
                 transformedResponse = this.requestOptions.transformResponse.transform(parsedResponse, this.requestOptions);
-                return new TailorResponse(transformedResponse, this.response?.status, this.response?.statusText, this.requestOptions.headers, this.requestOptions);
+
+                // Send response back
+                return new TailorResponse(transformedResponse, this.response, this.requestOptions);
             }
             transformedResponse = this.requestOptions.transformResponse.transform(responseAsString, this.requestOptions);
-            return new TailorResponse(transformedResponse, this.response?.status, this.response?.statusText, this.requestOptions.headers, this.requestOptions);
+
+            // Send response back
+            return new TailorResponse(transformedResponse, this.response, this.requestOptions);
         }
 
-        return new TailorResponse(responseAsString, this.response?.status, this.response?.statusText, this.requestOptions.headers, this.requestOptions);
+        // Send response back
+        return new TailorResponse(responseAsString, this.response, this.requestOptions);
     }
 
     private async readResponseBodyAsString(body: ReadableStream): Promise<string> {
@@ -171,7 +176,7 @@ export default class Request {
         if (this.method === 'GET') {
             const cacheResponse = await Cache.get(cacheKey, this.requestOptions);
             if (cacheResponse) {
-                return new TailorResponse(cacheResponse, this.response?.status, this.response?.statusText, this.requestOptions.headers, this.requestOptions, true);
+                return new TailorResponse(cacheResponse, this.response, this.requestOptions, true);
             }
         }
 
@@ -181,7 +186,7 @@ export default class Request {
                 if (this.requestOptions.cache) {
                     Cache.set(cacheKey, transformedResponse, this.requestOptions, this.requestOptions.cache.expiresIn);
                 }
-                return new TailorResponse(transformedResponse, this.response?.status, this.response?.statusText, this.requestOptions.headers, this.requestOptions);
+                return new TailorResponse(transformedResponse, this.response, this.requestOptions);
             }
 
             const transformedResponse = this.requestOptions.transformResponse.transform(await response.text(), this.requestOptions);
@@ -190,7 +195,7 @@ export default class Request {
                 Cache.set(cacheKey, transformedResponse, this.requestOptions, this.requestOptions.cache.expiresIn);
             }
 
-            return new TailorResponse(transformedResponse, this.response?.status, this.response?.statusText, this.requestOptions.headers, this.requestOptions);
+            return new TailorResponse(transformedResponse, this.response, this.requestOptions);
         }
 
         if (this.requestOptions.parseJSON && !this.requestOptions.transformResponse) {
@@ -200,14 +205,14 @@ export default class Request {
                 Cache.set(cacheKey, jsonResponse, this.requestOptions, this.requestOptions.cache.expiresIn);
             }
 
-            return new TailorResponse(jsonResponse, this.response?.status, this.response?.statusText, this.requestOptions.headers, this.requestOptions);
+            return new TailorResponse(jsonResponse, this.response, this.requestOptions);
         }
 
         if (this.requestOptions.cache) {
             Cache.set(cacheKey, response.text(), this.requestOptions,  this.requestOptions.cache.expiresIn);
         }
 
-        return new TailorResponse(response.text(), this.response?.status, this.response?.statusText, this.requestOptions.headers, this.requestOptions);
+        return new TailorResponse(response.text(), this.response, this.requestOptions);
     }
 
 
@@ -231,6 +236,20 @@ export default class Request {
         const requestHeaders = new Headers();
 
         requestHeaders.set('Content-Type', 'application/json');
+
+        if (this.requestOptions.auth) {
+            const { type, username, password } = this.requestOptions.auth;
+
+            switch (this.requestOptions.auth.type) {
+                case "basic": {
+                    requestHeaders.set('Authorization', `Basic ${btoa(`${username}:${password}`)}`);
+                    break;
+                }
+                case "digest": {
+                    throw new Error("Not yet implemented");
+                }
+            }
+        }
 
         if (this.requestOptions.headers) {
           for (const key in this.requestOptions.headers) {

@@ -1,10 +1,11 @@
 {
   "name": "tailorfetch",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "TailorFetch is a lightweight Node.js library for making HTTP requests with customizable options and response transformations.",
   "main": "lib/index.js",
   "scripts": {
     "build": "npm run clean && npm run build:esm",
+    "test": "mocha",
     "build:esm": "tsc",
     "build:cjs": "tsc --module CommonJS --outdir lib/cjs",
     "prepare": "npm run build",
@@ -14,13 +15,21 @@
   "files": [
     "lib"
   ],
-  "keywords": [],
+  "keywords": [
+    "HTTP-Client",
+    "Web",
+    "http",
+    "api"
+  ],
   "author": "Marek Dev",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.4.9"
   },
   "dependencies": {
-    "redis": "^4.6.7"
+    "chai": "^4.3.7",
+    "mocha": "^10.2.0",
+    "redis": "^4.6.7",
+    "ts-node": "^10.9.1"
   }
 }
