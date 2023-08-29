@@ -10,7 +10,7 @@ export default class TailorFetch {
      * @param urlStr {string} Url to make request to
      * @param options {IRequestOptions} Request options to add to request
      */
-    static async GET(urlStr: string, options?: IRequestOptions): Promise<any> {
+    static async GET(urlStr: string, options?: IRequestOptions): Promise<TailorResponse | undefined> {
         const request = new Request(urlStr, 'GET', { ...options });
 
         return await request.make();
@@ -23,7 +23,7 @@ export default class TailorFetch {
      * @param urlStr {string} Url to make request to
      * @param options {IRequestOptions} Request options to add to request
      */
-    static async POST(urlStr: string, options?: IRequestOptions): Promise<any> {
+    static async POST(urlStr: string, options?: IRequestOptions): Promise<TailorResponse | undefined> {
         const request = new Request(urlStr, 'POST', { ...options });
 
         return await request.make();
@@ -35,7 +35,7 @@ export default class TailorFetch {
      * @param urlStr {string} Url to make request to
      * @param options {IRequestOptions} Request options to add to request
      */
-    static async PUT(urlStr: string, options?: IRequestOptions): Promise<any> {
+    static async PUT(urlStr: string, options?: IRequestOptions): Promise<TailorResponse | undefined> {
         const request = new Request(urlStr, 'PUT', { ...options });
 
         return await request.make();
@@ -60,7 +60,7 @@ export default class TailorFetch {
      * @param urlStr {string} Url to make request to
      * @param options {IRequestOptions} Options to add to request
      */
-    static async DELETE(urlStr: string, options?: IRequestOptions): Promise<any> {
+    static async DELETE(urlStr: string, options?: IRequestOptions): Promise<TailorResponse | undefined> {
         const request = new Request(urlStr, 'DELETE', { ...options });
 
         return await request.make();
