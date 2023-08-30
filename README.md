@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://i.ibb.co/W6MBLYg/logo-removebg-preview.png" />
+</p>
+
 # TailorFetch
 
 TailorFetch is a lightweight Node.js library for making HTTP requests with customizable options and response transformations.
