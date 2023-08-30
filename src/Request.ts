@@ -68,6 +68,12 @@ export default class Request {
             signal: this.abortSignal
         }
 
+        // Intercept request
+        if (this.requestOptions.requestInterceptor) {
+            const modifiedRequestOptions = this.requestOptions.requestInterceptor.intercept(requestOptionsObject);
+            Object.assign(requestOptionsObject, modifiedRequestOptions);
+        }
+
         try {
             // Make an HTTP request
             this.response = await fetch(this.urlStr, requestOptionsObject);
@@ -212,7 +218,7 @@ export default class Request {
             Cache.set(cacheKey, response.text(), this.requestOptions,  this.requestOptions.cache.expiresIn);
         }
 
-        return new TailorResponse(response.text(), this.response, this.requestOptions);
+        return new TailorResponse(await response.text(), this.response, this.requestOptions);
     }
 
 

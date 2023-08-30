@@ -1,6 +1,7 @@
 import BaseTransform from "./BaseTransform";
 import {BufferSource} from "stream/web";
 import {createClient} from 'redis';
+import BaseRequestInterceptor from "./BaseRequestInterceptor";
 
 type redisClient = ReturnType<typeof createClient>;
 
@@ -9,6 +10,7 @@ export default interface IRequestOptions {
     queryParams?: {[key: string]: string};
     timeout?: number;
     transformResponse?: BaseTransform;
+    requestInterceptor?: BaseRequestInterceptor,
     body?: Blob | BufferSource | FormData | URLSearchParams | ReadableStream<Uint8Array> | string | null;
     parseJSON?: boolean;
     requestMode?: "navigate" | "same-origin" | "no-cors" | "cors",
