@@ -2,6 +2,9 @@ import IRequestOptions from "./IRequestOptions";
 
 class Cache {
 
+    /**
+     * Built in cache store (used when no redis client has been supplied but cache was enabled
+     */
     private readonly cache: { [key: string]: { value: any; expires: number; }; } = {};
 
     /**

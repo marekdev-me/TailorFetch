@@ -237,26 +237,30 @@ export default class Request {
 
         requestHeaders.set('Content-Type', 'application/json');
 
-        if (this.requestOptions.auth) {
-            const { type, username, password } = this.requestOptions.auth;
+        if (this.requestOptions.headers) {
 
-            switch (this.requestOptions.auth.type) {
-                case "basic": {
-                    requestHeaders.set('Authorization', `Basic ${btoa(`${username}:${password}`)}`);
-                    break;
-                }
-                case "digest": {
-                    throw new Error("Not yet implemented");
+            // Add an authentication headers
+            if (this.requestOptions.auth) {
+                const { type, username, password } = this.requestOptions.auth;
+
+                switch (type) {
+                    case "basic": {
+                        requestHeaders.set('Authorization', `Basic ${btoa(`${username}:${password}`)}`);
+                        break;
+                    }
+                    case "digest": {
+                        throw new Error("Not yet implemented");
+                    }
                 }
             }
+
+            // Add rest of the headers supplied by user
+            for (const key in this.requestOptions.headers) {
+                requestHeaders.set(key, this.requestOptions.headers[key]);
+            }
+            return requestHeaders;
         }
 
-        if (this.requestOptions.headers) {
-          for (const key in this.requestOptions.headers) {
-              requestHeaders.set(key, this.requestOptions.headers[key]);
-          }
-          return requestHeaders;
-        }
         return requestHeaders;
     }
 }
