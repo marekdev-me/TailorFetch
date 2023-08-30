@@ -1,10 +1,13 @@
 <p align="center">
-  <img src="https://i.ibb.co/W6MBLYg/logo-removebg-preview.png" />
+  <img src="https://i.ibb.co/W6MBLYg/logo-removebg-preview.png"  alt=""/>
 </p>
 
 # TailorFetch
 
 TailorFetch is a lightweight Node.js library for making HTTP requests with customizable options and response transformations.
+
+> **Warning**
+> WIP! Documentation might be outdated or incomplete
 
 ## Installation
 
@@ -32,13 +35,7 @@ const options = {
   parseJSON: true,
 };
 
-TailorFetch.GET(url, options)
-  .then(response => {
-    console.log('Response:', response);
-  })
-  .catch(error => {
-    console.error('Error:', error);
-  });
+await TailorFetch.GET(url, options);
 ```
 
 ### Making POST Request
@@ -55,14 +52,7 @@ const options = {
     parseJSON: true,
 };
 
-TailorFetch.POST(url, options)
-    .then(response => {
-        console.log('Response:', response);
-    })
-    .catch(error => {
-        console.error('Error:', error);
-    });
-
+await TailorFetch.POST(url, options);
 ```
 
 ## Options:
@@ -72,6 +62,7 @@ TailorFetch.POST(url, options)
  - `parseJSON`: Set to `true` to parse the response as JSON.
  - `body`: Data to be sent to remote server
  - `transformResponse`: A custom response transformer.
+ - `requestInterceptor`: A custom request interceptor
  - `requestMode`
  - `requestCache`
  - `requestCredentials`
@@ -88,30 +79,56 @@ You can use Redis cache with GET requests by supplying Redis client to request c
 
 ```typescript
 import TailorFetch from 'tailorfetch';
-import { createClient } from 'redis';
+import {createClient} from 'redis';
+import TailorResponse from "./Response";
 
+// Setup redis
 const client = createClient();
-
 client.on('error', (error) => console.log(error));
-
 client.connect();
 
-const response = await TailorFetch.GET('https://dummyjson.com/products/1', {
-    parseJSON: true, 
-    transformResponse: new ProductTransformer(), 
-    cache: {
+// Make a request
+const options = {
+   parseJSON: true,
+   transformResponse: new ProductTransformer(),
+   cache: {
       expiresIn: 600000,
       redisClient: client
-    }
-});
+   }
+};
+
+await TailorFetch.GET('https://dummyjson.com/products/1', options);
 ```
 
-## Custom Transformers
+## Custom Request Interceptor
+
+You can define a custom request transformer by extending the `BaseRequestInterceptor` class and overriding the `intercept` method.
+Modify headers, add authentication, or enhance the request before it's sent.
+
+```typescript
+import {BaseRequestInterceptor, IRequestOptions} from 'tailorfetch';
+
+class MyInterceptor extends BaseRequestInterceptor {
+   intercept(requestOptions: RequestInit) {
+      // Custom intercept logic
+      
+      return requestOptions;
+   }
+}
+
+const options = {
+   requestInterceptor: new MyInterceptor(),
+};
+
+await TailorFetch.GET(url, options);
+```
+
+## Custom Response Transformer
 
 You can define a custom response transformer by extending the `BaseTransform` class and overriding the `transform` method.
 
 ```typescript
-import {BaseTransform, IRequestOptions} from 'tailorfetch';
+import TailorFetch, {BaseTransform, IRequestOptions} from 'tailorfetch';
 
 class MyTransformer extends BaseTransform {
    transform(responseData: string | ReadableStream<any>, requestOptions: IRequestOptions) {
@@ -124,12 +141,5 @@ const options = {
    transformResponse: new MyTransformer(),
 };
 
-TailorFetch.GET(url, options)
-        .then(response => {
-           console.log('Transformed Response:', response);
-        })
-        .catch(error => {
-           console.error('Error:', error);
-        });
-
+await TailorFetch.GET(url, options);
 ```
