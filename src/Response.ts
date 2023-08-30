@@ -5,7 +5,7 @@ export default class TailorResponse {
     /**
      * Response data
      */
-    public data: string | undefined;
+    public data: any;
 
     /**
      * Request response status HTTP code
@@ -37,7 +37,7 @@ export default class TailorResponse {
      */
     public response: Response | undefined;
 
-    constructor(data: string | undefined, response: Response | undefined, config: IRequestOptions, isCached: boolean = false) {
+    constructor(data: any, response: Response | undefined, config: IRequestOptions, isCached: boolean = false) {
         this.data = data;
         this.status = response?.status;
         this.statusText = response?.statusText;
