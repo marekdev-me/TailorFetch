@@ -49,7 +49,7 @@ await TailorFetch.POST(url, options);
  - `headers`: An object containing request headers.
  - `queryParams`: An object containing query parameters for the URL.
  - `timeout`: The request timeout in milliseconds.
- - `parseJSON`: Set to `true` to parse the response as JSON.
+ - `json`: Set to `true` to parse the response as JSON.
  - `body`: Data to be sent to remote server
  - `transformResponse`: A custom response transformer.
  - `requestInterceptor`: A custom request interceptor
