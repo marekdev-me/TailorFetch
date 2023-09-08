@@ -118,6 +118,10 @@ export default class Request {
                     this.retryCount++;
                     return this.make();
                 }
+
+                if (this.requestOptions.onError) {
+                    this.requestOptions.onError(this.requestOptions, this.response, error);
+                }
             }
         }
 

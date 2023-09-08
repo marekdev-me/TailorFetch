@@ -29,5 +29,6 @@ export default interface IRequestOptions {
         username: string,
         password: string,
     },
+    onError?: (request: IRequestOptions, response: Response | undefined , error: unknown) => void;
     onProgress?: (loaded: number, total: number) => void;
 }
