@@ -140,7 +140,7 @@ export default class Request {
         let responseAsString = await this.readResponseBodyAsString(response);
 
         if (this.requestOptions.transformResponse) {
-            if (this.requestOptions.parseJSON) {
+            if (this.requestOptions.json) {
                 const parsedResponse = JSON.parse(responseAsString);
                 transformedResponse = this.requestOptions.transformResponse.transform(parsedResponse, this.requestOptions);
 
@@ -191,7 +191,7 @@ export default class Request {
         }
 
         if (this.requestOptions.transformResponse) {
-            if (this.requestOptions.parseJSON) {
+            if (this.requestOptions.json) {
                 const transformedResponse = this.requestOptions.transformResponse.transform(JSON.parse(await response.text()), this.requestOptions);
                 if (this.requestOptions.cache) {
                     Cache.set(cacheKey, transformedResponse, this.requestOptions, this.requestOptions.cache.expiresIn);
@@ -208,7 +208,7 @@ export default class Request {
             return new TailorResponse(transformedResponse, this.response, this.requestOptions);
         }
 
-        if (this.requestOptions.parseJSON && !this.requestOptions.transformResponse) {
+        if (this.requestOptions.json && !this.requestOptions.transformResponse) {
             const jsonResponse = JSON.parse(await response.text());
 
             if (this.requestOptions.cache) {

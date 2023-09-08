@@ -47,6 +47,7 @@ export default class TailorResponse {
         this.response = response;
     }
 
+    // TODO: This is probably not needed here
     toObject() {
         return {
             data: this.data,
@@ -57,11 +58,15 @@ export default class TailorResponse {
         }
     }
 
+    async text(): Promise<string | undefined> {
+        return await this.response?.text();
+    }
+
     /**
      * Return response in JSON format
      */
     json(): string | undefined {
-        if (!this.config.parseJSON && this.data) {
+        if (!this.config.json && this.data) {
             return JSON.parse(this.data);
         }
 
