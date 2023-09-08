@@ -19,37 +19,27 @@ npm install tailorfetch
  - Simplified HTTP GET, POST, PUT, PATCH, DELETE requests
  - Flexible options for headers, query parameters, timeouts, and more
  - Ability to transform response data using custom transformers
+ - Ability to intercept request with custom intercept logic
  - Easy-to-use interface for handling common use cases
- - Enables use of Redis caching
+ - Enables use of Redis or built-in caching
 
 ## Usage
 ### Making GET Request
 ```typescript
 import TailorFetch from 'tailorfetch';
 
-const url = 'https://api.example.com/data';
-const options = {
-  headers: { 'Authorization': 'Bearer YOUR_TOKEN' },
-  queryParams: { 'param1': 'value1' },
-  timeout: 5000,
-  parseJSON: true,
-};
-
-await TailorFetch.GET(url, options);
+await TailorFetch.GET('https://dummyjson.com/products');
 ```
 
 ### Making POST Request
 ```typescript
 import TailorFetch from 'tailorfetch';
 
-const url = 'https://api.example.com/post';
+const url = 'https://dummyjson.com/products/add';
 const options = {
-    headers: { 'Authorization': 'Bearer YOUR_TOKEN' },
-    data: {
-        key: 'value'
-    },
-    timeout: 5000,
-    parseJSON: true,
+    body: JSON.stringify({
+      title: 'BMW Pencil'
+    }),
 };
 
 await TailorFetch.POST(url, options);
@@ -66,7 +56,7 @@ await TailorFetch.POST(url, options);
  - `requestMode`
  - `requestCache`
  - `requestCredentials`
- - -`onProgress`: Callback function for progress reporting
+ - `onProgress`: Callback function for progress reporting
  - `cache`:
    - `expiresIn`: How long should cache be valid for (milliseconds)
    - `redisClient`: Redis client
@@ -74,23 +64,29 @@ await TailorFetch.POST(url, options);
    - `maxRetries`: Maximum number of times to attempt to make an HTTP request
    - `retryDelay`: Number of milliseconds to wait between attempts
 
-## Redis Cache
-You can use Redis cache with GET requests by supplying Redis client to request cache options as follows
+## Cache
+
+### Built-in cache
+
+> **Warning**
+> Built-in cache might be unstable and might return live results at all times
+
+By default when cache option is specified with only expiry time and no redis client option has been specified then internal cache will be used.
+
+### Redis Cache
+You can use Redis cache with GET requests by supplying Redis client to request cache options as follows.
 
 ```typescript
-import TailorFetch from 'tailorfetch';
+import TailorFetch, { TailorResponse } from 'tailorfetch';
 import {createClient} from 'redis';
-import TailorResponse from "./Response";
 
 // Setup redis
 const client = createClient();
 client.on('error', (error) => console.log(error));
 client.connect();
 
-// Make a request
+// Request options
 const options = {
-   parseJSON: true,
-   transformResponse: new ProductTransformer(),
    cache: {
       expiresIn: 600000,
       redisClient: client
@@ -143,3 +139,14 @@ const options = {
 
 await TailorFetch.GET(url, options);
 ```
+
+## Helper Functions
+
+### `TailorResponse`
+Following helper functions are awailable on `TailorResponse` returned when request is made
+
+   - `json()` - Returns parsed JSON data, only if `parseJSON` request option is false
+   - `successful()` - Returns boolean wether request was successful
+   - `failed()` - Returns boolean whether request has failed
+   - `clientError()` - Returns boolean whether an error was client error
+   - `serverError()` - Returns boolean whether an error was server error
