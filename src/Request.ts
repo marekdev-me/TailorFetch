@@ -245,7 +245,7 @@ export default class Request {
     private setHeaders(): HeadersInit {
         const requestHeaders = new Headers();
 
-        requestHeaders.set('Content-Type', 'application/json');
+        // requestHeaders.set('Content-Type', 'application/json');
 
         if (this.requestOptions.headers) {
 
