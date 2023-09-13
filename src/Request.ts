@@ -222,7 +222,11 @@ export default class Request {
             Cache.set(cacheKey, response.text(), this.requestOptions,  this.requestOptions.cache.expiresIn);
         }
 
-        return new TailorResponse(await response.text(), this.response, this.requestOptions);
+        if (response.body) {
+            return new TailorResponse(await response.text(), this.response, this.requestOptions);
+        }
+
+        return new TailorResponse(undefined, this.response, this.requestOptions);
     }
 
 
@@ -244,8 +248,6 @@ export default class Request {
      */
     private setHeaders(): HeadersInit {
         const requestHeaders = new Headers();
-
-        // requestHeaders.set('Content-Type', 'application/json');
 
         if (this.requestOptions.headers) {
 
