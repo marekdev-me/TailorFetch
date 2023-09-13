@@ -16,7 +16,7 @@ npm install tailorfetch
 ```
 
 ## Features
- - Simplified HTTP GET, POST, PUT, PATCH, DELETE requests
+ - Simplified HTTP GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS requests
  - Flexible options for headers, query parameters, timeouts, and more
  - Ability to transform response data using custom transformers
  - Ability to intercept request with custom intercept logic
@@ -45,24 +45,34 @@ const options = {
 await TailorFetch.POST(url, options);
 ```
 
+## Supported Methods:
+- `GET`        - Retrieves data or information from a specified resource.
+- `POST`       - Submits data to be processed to a specified resource.
+- `PUT`        - Updates a specified resource or creates it if it doesn't exist.
+- `PATCH`      - Applies partial modifications to a resource.
+- `DELETE`     - Deletes a specified resource.
+- `HEAD`       - Requests headers from a specified resource without the actual data.
+- `OPTIONS`    - Requests information about the communication options for a resource.
+
+
 ## Options:
- - `headers`: An object containing request headers.
- - `queryParams`: An object containing query parameters for the URL.
- - `timeout`: The request timeout in milliseconds.
- - `json`: Set to `true` to parse the response as JSON.
- - `body`: Data to be sent to remote server
- - `transformResponse`: A custom response transformer.
- - `requestInterceptor`: A custom request interceptor
+ - `headers`               -  An object containing request headers.
+ - `queryParams`           -  An object containing query parameters for the URL.
+ - `timeout`               -  The request timeout in milliseconds.
+ - `json`                  -  Set to `true` to parse the response as JSON.
+ - `body`                  -  Data to be sent to remote server
+ - `transformResponse`     -  A custom response transformer.
+ - `requestInterceptor`    -  A custom request interceptor
  - `requestMode`
  - `requestCache`
  - `requestCredentials`
- - `onProgress`: Callback function for progress reporting
+ - `onProgress`            -  Callback function for progress reporting
  - `cache`:
-   - `expiresIn`: How long should cache be valid for (milliseconds)
-   - `redisClient`: Redis client
+   - `expiresIn`           -  How long should cache be valid for (milliseconds)
+   - `redisClient`         -  Redis client instance
  - `retry`:
-   - `maxRetries`: Maximum number of times to attempt to make an HTTP request
-   - `retryDelay`: Number of milliseconds to wait between attempts
+   - `maxRetries`          -  Maximum number of times to attempt to make an HTTP request
+   - `retryDelay`          -  Number of milliseconds to wait between attempts
 
 ## Cache
 
