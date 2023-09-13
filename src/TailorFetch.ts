@@ -89,20 +89,6 @@ export default class TailorFetch {
     }
 
     /**
-     * Make a HTTP Connect request
-     * 
-     * @param urlStr {string} URL to make a request to
-     * @param options {IRequestOptions} Options to add to request
-     * 
-     * @returns {TailorResponse | undefined}
-     */
-    static async CONNECT(urlStr: string, options?: IRequestOptions): Promise<TailorResponse | undefined> {
-        const request = new Request(urlStr, 'CONNECT', { ...options });
-
-        return request.make();
-    }
-
-    /**
      * 
      * @param urlStr {string} URL to make a request to 
      * @param options {IRequestOptions} Options to add to request
