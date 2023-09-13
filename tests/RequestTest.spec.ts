@@ -3,61 +3,183 @@ import TailorFetch, {TailorResponse} from "../src/index";
 import {assert, expect} from "chai";
 
 describe('make GET, POST, PUT, PATCH, DELETE requests', () => {
-   it('should make a GET request and get data back', async () => {
+   it('should successfully retrieve data from a GET request', async () => {
+      // Arrange: Set up the test by defining the URL and request options
+      const url = "https://dummyjson.com/products/1";
+      const requestOptions = { json: true };
 
-      const response: TailorResponse | undefined = await TailorFetch.GET('https://dummyjson.com/products/1', { parseJSON: true });
+      // Act: Perform the GET request and recieve response
+      const response: TailorResponse | undefined = await TailorFetch.GET(url, requestOptions);
 
-      assert.equal(response?.successful(), true);
+      // Assert: Verify the expected outcomes
+
+      // Check if the response is successful (status code 2xx).
+      assert.equal(response?.successful(), true, "GET request failed");
+
+      // Check if response if an instance of TailorResponse
       assert.instanceOf(response, TailorResponse);
-      expect(response?.data).not.be.undefined;
+
+      // Check that data is recieved and is not undefined
+      expect(response?.data).to.not.be.undefined;
    });
 
-   it('should make a POST request and get new data back', async () => {
-      const response = await TailorFetch.POST('https://dummyjson.com/products/add', { parseJSON: true, body: JSON.stringify({
-            title: 'example',
-            price: 200000
-         })});
+   it('should successfully create a new product via POST request', async () => {
+      // Arrange: Set up the test by defining the URL and request options
+      const url = "https://dummyjson.com/products/add";
+      const requestOptions = {
+         json: true,
+         headers: {
+            'Content-Type': 'application/json'
+         },
+         body: JSON.stringify({
+            "title": 'example',
+         })
+      };
 
-      assert.equal(response?.data.title, "example", "POST request failed to update data");
+      // Act: Perform the GET request and recieve response
+      const response: TailorResponse | undefined = await TailorFetch.POST(url, requestOptions);
 
-      assert.equal(response?.successful(), true);
+      // Assert: Verify the expected outcomes
+
+      // Check if the response is successful (status code 2xx)
+      assert.equal(response?.successful(), true, "POST request failed");
+
+      // Check if response if an instance of TailorResponse
       assert.instanceOf(response, TailorResponse);
-      expect(response?.data).not.be.undefined;
+
+      // Check that data is received and is not undefined
+      expect(response?.data).to.not.be.undefined;
+
+      // Check specific response data properties
+      assert.equal(response?.data.title, 'example', 'Incorrect product title');
    });
 
-   it('should make a PUT request and get new data back', async () => {
-      const response = await TailorFetch.POST('https://dummyjson.com/products/add', { parseJSON: true, body: JSON.stringify({
-            title: 'newItem',
-            price: 200000
-         })});
+   it('should successfully update data via PUT request', async () => {
+      // Arrange: Set up the test by defining the URL and request options
+      const url = "https://dummyjson.com/products/1";
+      const requestOptions = {
+         json: true,
+         headers: {
+            'Content-Type': 'application/json'
+         },
+         body: JSON.stringify({
+            "title": 'updatedItem',
+         })
+      };
 
-      assert.equal(response?.data.title, "newItem", "PUT request failed to update data");
+      // Act: Perform the GET request and recieve response
+      const response: TailorResponse | undefined = await TailorFetch.PUT(url, requestOptions);
 
-      assert.equal(response?.successful(), true);
+      // Assert: Verify the expected outcomes
+
+      // Check if the response is successful (status code 2xx)
+      assert.equal(response?.successful(), true, 'PUT request has failed');
+
+      // Check if response if an instance of TailorResponse
       assert.instanceOf(response, TailorResponse);
-      expect(response?.data).not.be.undefined;
+
+      // Check that data is received and is not undefined
+      expect(response?.data).to.not.be.undefined;
+
+      // Check specific response data properties
+      assert.equal(response?.data.title, 'updatedItem', 'Incorrect product title');
    });
 
-   it('should make a PATCH request and get new data back', async () => {
-      const response = await TailorFetch.PATCH('https://dummyjson.com/products/1', { parseJSON: true, body: JSON.stringify({
-            title: 'newItem',
-            price: 200000
-         })});
+   it('should successfully update data via PATCH request', async () => {
+      // Arrange: Set up the test by defining the URL and request options
+      const url = "https://dummyjson.com/products/1";
+      const requestOptions = {
+         json: true,
+         headers: {
+            'Content-Type': 'application/json'
+         },
+         body: JSON.stringify({
+            "title": 'updatedItem',
+         })
+      };
 
-      assert.equal(response?.data.title, "newItem", "PUT request failed to update data");
+      // Act: Perform the GET request and recieve response
+      const response: TailorResponse | undefined = await TailorFetch.PATCH(url, requestOptions);
 
-      assert.equal(response?.successful(), true);
+      // Assert: Verify the expected outcomes
+
+      // Check if the response is successful (status code 2xx)
+      assert.equal(response?.successful(), true, 'PUT request has failed');
+
+      // Check if response if an instance of TailorResponse
       assert.instanceOf(response, TailorResponse);
-      expect(response?.data).not.be.undefined;
+
+      // Check that data is received and is not undefined
+      expect(response?.data).to.not.be.undefined;
+
+      // Check specific response data properties
+      assert.equal(response?.data.title, 'updatedItem', 'Incorrect product title');
    });
 
-   it('should make a DELETE request and get deleted resource back', async () => {
-      const response = await TailorFetch.DELETE('https://dummyjson.com/products/1', { parseJSON: true });
-
-      assert.equal(response?.data.id, 1, "PUT request failed to update data");
-
-      assert.equal(response?.successful(), true);
+   it('should successfully delete a resource via DELETE request', async () => {
+      // Arrange: Set up the test by defining the URL and request options.
+      const url = 'https://dummyjson.com/products/1'; // Use the appropriate URL for deleting the resource.
+      const requestOptions = {
+        json: true,
+      };
+    
+      // Act: Perform the DELETE request and receive a response.
+      const response: TailorResponse | undefined = await TailorFetch.DELETE(url, requestOptions);
+    
+      // Assert: Verify the expected outcomes.
+    
+      // Check if the response is successful (status code 2xx).
+      assert.equal(response?.successful(), true, 'DELETE request failed');
+    
+      // Check if the response is an instance of TailorResponse.
       assert.instanceOf(response, TailorResponse);
-      expect(response?.data).not.be.undefined;
-   });
+    
+      // Check that data is received and is not undefined.
+      expect(response?.data).to.not.be.undefined;
+    
+      // Check specific response data properties, e.g., the ID of the deleted resource.
+      assert.equal(response?.data.id, 1, 'Incorrect resource ID');
+    });
+
+    it('should successfully make a HEAD request', async () => {
+      // Arrange: Set up the test by defining the URL and request options.
+      const url = 'https://dummyjson.com/products/1'; // Use the appropriate URL for the HEAD request.
+    
+      // Act: Perform the HEAD request and receive a response.
+      const response: TailorResponse | undefined = await TailorFetch.HEAD(url);
+    
+      // Assert: Verify the expected outcomes.
+    
+      // Check if the response is successful (status code 2xx).
+      assert.equal(response?.successful(), true, 'HEAD request failed');
+    
+      // Check if the response is an instance of TailorResponse.
+      assert.instanceOf(response, TailorResponse);
+    
+      // Check that data is received and is undefined for a HEAD request.
+      expect(response?.data).to.be.undefined;
+    });
+
+    it('should successfully make an OPTIONS request', async () => {
+      // Arrange: Set up the test by defining the URL and request options.
+      const url = 'https://dummyjson.com/products/1'; // Use the appropriate URL for the OPTIONS request.
+    
+      // Act: Perform the OPTIONS request and receive a response.
+      const response: TailorResponse | undefined = await TailorFetch.OPTIONS(url);
+    
+      // Assert: Verify the expected outcomes.
+    
+      // Check if the response is successful (status code 2xx).
+      assert.equal(response?.successful(), true, 'OPTIONS request failed');
+    
+      // Check if the response is an instance of TailorResponse.
+      assert.instanceOf(response, TailorResponse);
+    
+      // Check that data is received and is not undefined.
+      expect(response?.data).to.be.undefined;
+
+      // Check if the "Allow" header is present in the response headers.
+      const allowHeader = response?.headers?.get('access-control-allow-methods');
+      expect(allowHeader).to.not.be.null;
+    });
 });

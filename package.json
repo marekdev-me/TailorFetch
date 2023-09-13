@@ -24,12 +24,15 @@
   "author": "Marek Dev",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^20.4.9"
+    "@types/chai": "^4.3.6",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^20.4.9",
+    "mocha": "^10.2.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
   },
   "dependencies": {
     "chai": "^4.3.7",
-    "mocha": "^10.2.0",
-    "redis": "^4.6.7",
-    "ts-node": "^10.9.1"
+    "redis": "^4.6.7"
   }
 }
