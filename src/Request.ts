@@ -112,6 +112,8 @@ export default class Request {
             return await this.handleResponse(this.response);
 
         } catch (error) {
+            console.log(error);
+            
             if (this.requestOptions.retry) {
                 if (this.retryCount < this.requestOptions.retry.maxRetries) {
                     await this.sleep(this.requestOptions.retry.retryDelay || 0);
