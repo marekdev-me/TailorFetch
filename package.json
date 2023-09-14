@@ -33,6 +33,6 @@
   },
   "dependencies": {
     "chai": "^4.3.7",
-    "redis": "^4.6.7"
+    "redis": "^4.6.8"
   }
 }
