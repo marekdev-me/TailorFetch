@@ -2,6 +2,8 @@
   <img src="https://i.ibb.co/W6MBLYg/logo-removebg-preview.png"  alt=""/>
 </p>
 
+[![Node.js Package](https://github.com/marekdev-me/TailorFetch/actions/workflows/npm-publish.yml/badge.svg)](https://github.com/marekdev-me/TailorFetch/actions/workflows/npm-publish.yml)
+
 # TailorFetch
 
 TailorFetch is a lightweight Node.js library for making HTTP requests with customizable options and response transformations.
