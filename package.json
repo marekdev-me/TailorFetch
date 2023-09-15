@@ -34,6 +34,6 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "redis": "^4.6.7"
+    "redis": "^4.6.8"
   }
 }
