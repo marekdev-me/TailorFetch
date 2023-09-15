@@ -29,6 +29,11 @@ export default interface IRequestOptions {
         username: string,
         password: string,
     },
+    // proxy?: {
+    //     protocol: string,
+    //     hostName: string,
+    //     port: number
+    // }
     onError?: (request: IRequestOptions, response: Response | undefined , error: unknown) => void;
     onProgress?: (loaded: number, total: number) => void;
 }
