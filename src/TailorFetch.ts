@@ -16,19 +16,6 @@ export default class TailorFetch {
 
         return await request.make();
     }
-    /**
-     * 
-     * @param urlStr {string} Url to make request to
-     * @param method {string} Request method to make request with
-     * @param options {IRequestOptions} Request options
-     * 
-     * @returns {TailorResponse | undefined}
-     */
-    static async make(urlStr: string, method: 'GET'|'POST'|'PUT'|'PATCH'|'DELETE'|'CONNECT'|'HEAD'|'OPTIONS', options?: IRequestOptions): Promise<TailorResponse | undefined> {
-        const request = new Request(urlStr, method, { ...options });
-
-        return await request.make();
-    }
 
     /**
      * Make an HTTP GET request
@@ -118,18 +105,6 @@ export default class TailorFetch {
         const request = new Request(urlStr, 'HEAD', { ...options });
 
         return request.make();
-    }
-
-    static async HEAD(urlStr: string, options?: IRequestOptions): Promise<TailorResponse | undefined> {
-        const request = new Request(urlStr, 'HEAD', { ...options });
-
-        return request.make();
-    }
-
-    static async OPTIONS(urlStr: string, options?: IRequestOptions): Promise<TailorResponse | undefined> {
-        const request = new Request(urlStr, 'OPTIONS', { ...options });
-
-        return await request.make();
     }
 
     /**
