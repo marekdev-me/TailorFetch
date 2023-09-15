@@ -88,6 +88,12 @@ export default class TailorFetch {
         return await request.make();
     }
 
+    static async CONNECT(urlStr: string, options?: IRequestOptions): Promise<TailorResponse | undefined> {
+        const request = new Request(urlStr, 'CONNECT', { ...options });
+
+        return request.make();
+    }
+
     /**
      * 
      * @param urlStr {string} URL to make a request to 

@@ -4,13 +4,13 @@
   "description": "TailorFetch is a lightweight Node.js library for making HTTP requests with customizable options and response transformations.",
   "main": "lib/index.js",
   "scripts": {
-    "build": "npm run clean && npm run build:esm",
+    "build": "npm run test && npm run clean && npm run build:esm",
     "test": "mocha",
     "build:esm": "tsc",
     "build:cjs": "tsc --module CommonJS --outdir lib/cjs",
     "prepare": "npm run build",
     "updateLink": "npm run clean && tsc && npm rm lib -g && npm link",
-    "clean": "if exist lib ( rd /S /Q lib)"
+    "clean": "rimraf ./lib"
   },
   "files": [
     "lib"
@@ -27,12 +27,13 @@
     "@types/chai": "^4.3.6",
     "@types/mocha": "^10.0.1",
     "@types/node": "^20.4.9",
+    "chai": "^4.3.8",
     "mocha": "^10.2.0",
+    "rimraf": "^5.0.1",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "chai": "^4.3.7",
-    "redis": "^4.6.8"
+    "redis": "^4.6.7"
   }
 }
