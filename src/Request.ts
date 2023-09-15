@@ -1,279 +1,359 @@
 import IRequestOptions from "./IRequestOptions";
 import Cache from "./Cache";
 import TailorResponse from "./Response";
+import NetworkError from "./errors/NetworkError";
+import ConnectionTimeoutError from "./errors/ConnectionTimeoutError";
 
 export default class Request {
 
-    /**
-     * Url of the remote server to make request to
-     *
-     * @private
-     */
-    private readonly urlStr: URL;
+	/**
+	 * Url of the remote server to make request to
+	 *
+	 * @private
+	 */
+	private readonly urlStr: URL;
 
-    /**
-     * HTTP method to use for request
-     *
-     * @private
-     */
-    private readonly method: string;
+	/**
+	 * HTTP method to use for request
+	 *
+	 * @private
+	 */
+	private readonly method: string;
 
-    /**
-     * Request options to add to request
-     *
-     * @private
-     */
-    private readonly requestOptions: IRequestOptions;
+	/**
+	 * Request options to add to request
+	 *
+	 * @private
+	 */
+	private readonly requestOptions: IRequestOptions;
 
-    /**
-     * Signal to be used for cancellation
-     *
-     * @private
-     */
-    private readonly abortSignal: AbortSignal | undefined;
+	/**
+	 * Signal to be used for cancellation
+	 *
+	 * @private
+	 */
+	private readonly abortSignal: AbortSignal | undefined;
 
-    /**
-     * Request response
-     *
-     * @private
-     */
-    private response: Response | undefined = undefined;
+	/**
+	 * Request response
+	 *
+	 * @private
+	 */
+	private response: Response | undefined = undefined;
 
-    /**
-     * Attempts count
-     *
-     * @private
-     */
-    private retryCount = 0;
+	/**
+	 * Attempts count
+	 *
+	 * @private
+	 */
+	private retryCount = 0;
 
-    constructor(urlStr: string, method: string, requestOptions: IRequestOptions, signal?: AbortSignal) {
-        this.urlStr = new URL(urlStr);
-        this.method = method;
-        this.requestOptions = requestOptions;
-        this.abortSignal = signal;
-    }
+	constructor(urlStr: string, method: string, requestOptions: IRequestOptions, signal?: AbortSignal) {
+		this.urlStr = new URL(urlStr);
+		this.method = method;
+		this.requestOptions = requestOptions;
+		this.abortSignal = signal;
+	}
 
-    /**
-     * Make an HTTP request to a remote URL
-     */
-    async make(): Promise<TailorResponse | undefined> {
+	/**
+	 * Make an HTTP response to remote URL
+	 * 
+	 * @returns {TailorResponse | undefined}
+	 */
+	async make(): Promise<TailorResponse | undefined> {
+		const requestOptionsObject = this.buildRequestOptions();
 
-        const requestOptionsObject: RequestInit = {
-            method: this.method,
-            headers: this.setHeaders(),
-            mode: this.requestOptions.requestMode,
-            body: this.requestOptions.body,
-            cache: this.requestOptions.requestCache,
-            credentials: this.requestOptions.requestCredentials,
-            signal: this.abortSignal
-        }
+		try {
+			this.response = await fetch(this.urlStr, requestOptionsObject);
 
-        // Intercept request
-        if (this.requestOptions.requestInterceptor) {
-            const modifiedRequestOptions = this.requestOptions.requestInterceptor.intercept(requestOptionsObject);
-            Object.assign(requestOptionsObject, modifiedRequestOptions);
-        }
+			if (this.requestOptions.onProgress && this.response.body) {
+				return await this.handleProgress(this.response);
+			}
 
-        try {
-            // Make an HTTP request
-            this.response = await fetch(this.urlStr, requestOptionsObject);
+			return await this.handleResponse(this.response);
 
-            if (this.requestOptions.onProgress && this.response.body) {
-                const reader = this.response.body.getReader();
-                const contentLength = Number(this.response.headers.get('content-length')) | 0;
+		} catch (error) {
+			if (this.shouldRetry(error)) {
+				return await this.retry();
+			}
 
-                let loadedBytes = 0;
-                const requestOptions = this.requestOptions;
+			if (this.requestOptions.onError) {
+				this.requestOptions.onError(this.requestOptions, this.response, error);
+			}
 
-                const body = new ReadableStream({
-                  async start(controller) {
-                      while (true) {
-                          const { done, value } = await reader.read();
+			return new TailorResponse(undefined, this.response, this.requestOptions);
+		}
+	}
 
-                          if (done) {
-                              controller.close();
-                              break;
-                          }
+	/**
+	 * Build request options object
+	 * 
+	 * @returns {RequestInit}
+	 */
+	private buildRequestOptions(): RequestInit {
+		const requestOptionsObject: RequestInit = {
+			method: this.method,
+			headers: this.setHeaders(),
+			mode: this.requestOptions.requestMode,
+			body: this.requestOptions.body,
+			cache: this.requestOptions.requestCache,
+			credentials: this.requestOptions.requestCredentials,
+			signal: this.abortSignal
+		};
 
-                          loadedBytes += value?.length || 0;
-                          if (requestOptions.onProgress) {
-                              requestOptions.onProgress(loadedBytes, contentLength);
-                          }
+		// Intercept request
+		if (this.requestOptions.requestInterceptor) {
+			const modifiedRequestOptions = this.requestOptions.requestInterceptor.intercept(requestOptionsObject);
+			Object.assign(requestOptionsObject, modifiedRequestOptions);
+		}
 
-                          controller.enqueue(value);
-                      }
-                  }
-                });
+		return requestOptionsObject;
+	}
 
-                return await this.handleReadableStreamResponse(body);
-            }
+	/**
+	 * Handle request processing progress reporting
+	 * 
+	 * @param body {ReadableStream}
+	 * 
+	 * @returns {TailorResponse} 
+	 */
+	private async handleProgress(response: Response): Promise<TailorResponse> {
+		const contentLengthHeader = response.headers.get('Content-Length');
 
-            // Handle response
-            return await this.handleResponse(this.response);
+		if (response.body && contentLengthHeader) {
+			const reader = response.body.getReader();
+			let loadedBytes = 0;
+			let totalBytes = parseInt(contentLengthHeader, 10);
 
-        } catch (error) {
+			const progressCallback = this.requestOptions.onProgress;
 
-            if (this.requestOptions.retry) {
-                if (this.retryCount < this.requestOptions.retry.maxRetries) {
-                    await this.sleep(this.requestOptions.retry.retryDelay || 0);
-                    this.retryCount++;
-                    return this.make();
-                }
+			const controller = new ReadableStream({
+				async start(controller) {
+					while (true) {
+						const { done, value } = await reader.read();
 
-                if (this.requestOptions.onError) {
-                    this.requestOptions.onError(this.requestOptions, this.response, error);
-                }
-            }
-        }
+						if (done) {
+							controller.close();
+							break;
+						}
 
-        return new TailorResponse(undefined, this.response, this.requestOptions, false);
-    }
+						loadedBytes += value?.length || 0;
 
-    /**
-     * Handle Readable Stream response
-     *
-     * @param response {ReadableStream<any>} Readable stream to read
-     *
-     * @private
-     */
-    private async handleReadableStreamResponse(response: ReadableStream): Promise<TailorResponse> {
-        let transformedResponse;
-        let responseAsString = await this.readResponseBodyAsString(response);
+						if (progressCallback) {
+							// Calculate and report progress as a precentage
+							const progress = (loadedBytes / totalBytes) * 100;
+							progressCallback(loadedBytes, totalBytes, progress);
+						}
 
-        if (this.requestOptions.transformResponse) {
-            if (this.requestOptions.json) {
-                const parsedResponse = JSON.parse(responseAsString);
-                transformedResponse = this.requestOptions.transformResponse.transform(parsedResponse, this.requestOptions);
+						controller.enqueue();
+					}
+				}
+			});
 
-                // Send response back
-                return new TailorResponse(transformedResponse, this.response, this.requestOptions);
-            }
-            transformedResponse = this.requestOptions.transformResponse.transform(responseAsString, this.requestOptions);
+			// Continue processing the response
+			return await this.handleReadableStreamResponse(controller);
+		}
 
-            // Send response back
-            return new TailorResponse(transformedResponse, this.response, this.requestOptions);
-        }
+		return new TailorResponse(undefined, response, this.requestOptions);
+	}
 
-        // Send response back
-        return new TailorResponse(responseAsString, this.response, this.requestOptions);
-    }
+	/**
+	 * Handle readable stream response
+	 * 
+	 * @param response {ReadableStream}
+	 * 
+	 * @returns {Promise<TailorResponse>} 
+	 */
+	private async handleReadableStreamResponse(response: ReadableStream): Promise<TailorResponse> {
+		// Read the response body as a string
+		const responseAsString = await this.readResponseBodyAsString(response);
 
-    private async readResponseBodyAsString(body: ReadableStream): Promise<string> {
-        const reader = body.getReader();
-        let text = '';
+		// Apply transformation if a transform is provided
+		if (this.requestOptions.transformResponse) {
+			const transformedResponse = this.requestOptions.transformResponse.transform(this.transformResponse(responseAsString), this.requestOptions);
+			return new TailorResponse(transformedResponse, this.response, this.requestOptions);
+		}
 
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
+		return new TailorResponse(responseAsString, this.response, this.requestOptions);
+	}
 
-            text += new TextDecoder().decode(value);
-        }
+	/**
+	 * @param responseAsString {string}
+	 * 
+	 * @returns {string} 
+	 */
+	private transformResponse(responseAsString: string): string {
+		if (this.requestOptions.json) {
+			return JSON.parse(responseAsString);
+		}
 
-        return text;
-    }
+		return responseAsString;
+	}
 
-    /**
-     * Handle incoming HTTP request
-     *
-     * @param response { Response } HTTP response received from remote server
-     *
-     * @private
-     */
-    private async handleResponse(response: Response): Promise<TailorResponse> {
+	/**
+	 * 
+	 * @param body {ReadableStream}
+	 * 
+	 * @returns {Promise<string>}
+	 */
+	private async readResponseBodyAsString(body: ReadableStream): Promise<string> {
+		const reader = body.getReader();
+		let text = '';
 
-        // Generate the cache key
-        const cacheKey = Cache.generateCacheKey(this.method, this.urlStr.toString(), this.requestOptions);
+		while (true) {
+			const { done, value } = await reader.read();
+			if (done) break;
 
-        if (this.method === 'GET') {
-            const cacheResponse = await Cache.get(cacheKey, this.requestOptions);
-            if (cacheResponse) {
-                return new TailorResponse(cacheResponse, this.response, this.requestOptions, true);
-            }
-        }
+			text += new TextDecoder().decode(value);
+		}
 
-        if (this.requestOptions.transformResponse) {
-            if (this.requestOptions.json) {
-                const transformedResponse = this.requestOptions.transformResponse.transform(JSON.parse(await response.text()), this.requestOptions);
-                if (this.requestOptions.cache) {
-                    Cache.set(cacheKey, transformedResponse, this.requestOptions, this.requestOptions.cache.expiresIn);
-                }
-                return new TailorResponse(transformedResponse, this.response, this.requestOptions);
-            }
+		return text;
+	}
 
-            const transformedResponse = this.requestOptions.transformResponse.transform(await response.text(), this.requestOptions);
+	/**
+	 * Handle incoming HTTP request
+	 *
+	 * @param response { Response } HTTP response received from remote server
+	 *
+	 * @private
+	 */
+	private async handleResponse(response: Response): Promise<TailorResponse> {
 
-            if (this.requestOptions.cache) {
-                Cache.set(cacheKey, transformedResponse, this.requestOptions, this.requestOptions.cache.expiresIn);
-            }
+		// Generate the cache key
+		const cacheKey = Cache.generateCacheKey(this.method, this.urlStr.toString(), this.requestOptions);
 
-            return new TailorResponse(transformedResponse, this.response, this.requestOptions);
-        }
+		// Try to get the response from cache (if it's a GET request and caching is enabled)
+		if (this.method === 'GET' && this.requestOptions.cache) {
+			const cachedResponse = await Cache.get(cacheKey, this.requestOptions);
+			if (cachedResponse) {
+				return new TailorResponse(cachedResponse, response, this.requestOptions, true);
+			}
+		}
 
-        if (this.requestOptions.json && !this.requestOptions.transformResponse) {
-            const jsonResponse = JSON.parse(await response.text());
+		// Fetch response
+		const responseBody = response.body ? await response.text() : undefined;
 
-            if (this.requestOptions.cache) {
-                Cache.set(cacheKey, jsonResponse, this.requestOptions, this.requestOptions.cache.expiresIn);
-            }
+		// Transform the response if transform is provided
+		if (this.requestOptions.transformResponse) {
+			const transformedResponse = this.requestOptions.transformResponse.transform(
+				this.requestOptions.json && responseBody ? JSON.parse(responseBody) : responseBody,
+				this.requestOptions
+			);
 
-            return new TailorResponse(jsonResponse, this.response, this.requestOptions);
-        }
+			// Cache the transformed response (if caching is enabled)
+			if (this.requestOptions.cache) {
+				Cache.set(cacheKey, transformedResponse, this.requestOptions, this.requestOptions.cache.expiresIn);
+			}
 
-        if (this.requestOptions.cache) {
-            Cache.set(cacheKey, response.text(), this.requestOptions,  this.requestOptions.cache.expiresIn);
-        }
+			return new TailorResponse(transformedResponse, this.response, this.requestOptions);
+		}
 
-        if (response.body) {
-            return new TailorResponse(await response.text(), this.response, this.requestOptions);
-        }
+		// If no transform function is provided, parse JSON (if json option is enabled)
+		if (this.requestOptions.json && responseBody) {
+			const jsonResponse = JSON.parse(responseBody);
 
-        return new TailorResponse(undefined, this.response, this.requestOptions);
-    }
+			// Cache the JSON response (if caching enabled)
+			if (this.requestOptions.cache) {
+				Cache.set(cacheKey, jsonResponse, this.requestOptions, this.requestOptions.cache.expiresIn);
+			}
+
+			return new TailorResponse(jsonResponse, this.response, this.requestOptions);
+		}
+
+		// Cache the original response if caching is enabled
+		if (this.requestOptions.cache) {
+			Cache.set(cacheKey, responseBody, this.requestOptions, this.requestOptions.cache.expiresIn);
+		}
+
+		// Return the original or transformed response
+		return new TailorResponse(responseBody, this.response, this.requestOptions);
+	}
 
 
-    /**
-     * Delay request when attempting after failed request
-     *
-     * @param delay { number } Number of milliseconds to sleep for
-     *
-     * @private
-     */
-    private sleep(delay: number): Promise<void> {
-        return new Promise(resolve => setTimeout(resolve, delay));
-    }
+	private shouldRetry(error: any): boolean {
+		// Determine if a retry should be attempted based on the error type or specific conditions.
+		if (error instanceof NetworkError) {
+			// Retry for network errors like connection issues.
+			return true;
+		}
 
-    /**
-     * Set a request headers
-     *
-     * @private
-     */
-    private setHeaders(): HeadersInit {
-        const requestHeaders = new Headers();
+		if (error instanceof ConnectionTimeoutError) {
+			// Retry for timeouts.
+			return true;
+		}
 
-        if (this.requestOptions.headers) {
+		return false;
+	}
 
-            // Add an authentication headers
-            if (this.requestOptions.auth) {
-                const { type, username, password } = this.requestOptions.auth;
+	private async retry(): Promise<TailorResponse | undefined> {
+		const maxRetries = this.requestOptions.retry?.maxRetries || 0;
+		const retryDelay = this.requestOptions.retry?.retryDelay || 0;
 
-                switch (type) {
-                    case "basic": {
-                        requestHeaders.set('Authorization', `Basic ${btoa(`${username}:${password}`)}`);
-                        break;
-                    }
-                    case "digest": {
-                        throw new Error("Not yet implemented");
-                    }
-                }
-            }
+		for (let retryCount = 0; retryCount < maxRetries; retryCount++) {
+			try {
+				const response = await this.make();
 
-            // Add rest of the headers supplied by user
-            for (const key in this.requestOptions.headers) {
-                requestHeaders.set(key, this.requestOptions.headers[key]);
-            }
-            return requestHeaders;
-        }
+				if (response && response.successful()) {
+					return response;
+				}
 
-        return requestHeaders;
-    }
+			} catch (error) {
+				// ERROR
+			}
+
+			if (retryDelay) {
+				await this.sleep(retryDelay);
+			}
+		}
+
+		// If all retries fail, return an appropriate response or handle it accordingly.
+		return new TailorResponse(undefined, this.response, this.requestOptions);
+	}
+
+
+	/**
+	 * Delay request when attempting after failed request
+	 *
+	 * @param delay { number } Number of milliseconds to sleep for
+	 *
+	 * @private
+	 */
+	private sleep(delay: number): Promise<void> {
+		return new Promise(resolve => setTimeout(resolve, delay));
+	}
+
+	/**
+	 * Set a request headers
+	 *
+	 * @private
+	 */
+	private setHeaders(): HeadersInit {
+		const requestHeaders = new Headers();
+
+		if (this.requestOptions.headers) {
+
+			// Add an authentication headers
+			if (this.requestOptions.auth) {
+				const { type, username, password } = this.requestOptions.auth;
+
+				switch (type) {
+					case "basic": {
+						requestHeaders.set('Authorization', `Basic ${btoa(`${username}:${password}`)}`);
+						break;
+					}
+					case "digest": {
+						throw new Error("Not yet implemented");
+					}
+				}
+			}
+
+			// Add rest of the headers supplied by user
+			for (const key in this.requestOptions.headers) {
+				requestHeaders.set(key, this.requestOptions.headers[key]);
+			}
+			return requestHeaders;
+		}
+
+		return requestHeaders;
+	}
 }

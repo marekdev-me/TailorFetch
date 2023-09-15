@@ -1,13 +1,13 @@
 import BaseTransform from "./BaseTransform";
-import {BufferSource} from "stream/web";
-import {createClient} from 'redis';
+import { BufferSource } from "stream/web";
+import { createClient } from 'redis';
 import BaseRequestInterceptor from "./BaseRequestInterceptor";
 
 type redisClient = ReturnType<typeof createClient>;
 
 export default interface IRequestOptions {
-    headers?: {[key: string]: string};
-    queryParams?: {[key: string]: string};
+    headers?: { [key: string]: string };
+    queryParams?: { [key: string]: string };
     timeout?: number;
     transformResponse?: BaseTransform;
     requestInterceptor?: BaseRequestInterceptor,
@@ -34,6 +34,6 @@ export default interface IRequestOptions {
     //     hostName: string,
     //     port: number
     // }
-    onError?: (request: IRequestOptions, response: Response | undefined , error: unknown) => void;
-    onProgress?: (loaded: number, total: number) => void;
+    onError?: (request: IRequestOptions, response: Response | undefined, error: unknown) => void;
+    onProgress?: (loaded: number, total: number, progress: number) => void;
 }
