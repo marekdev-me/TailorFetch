@@ -118,7 +118,7 @@ export default class TailorResponse {
     created(): boolean {
         return this.status == 201;
     }
-    
+
     /**
      * 202 Created
      * 

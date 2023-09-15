@@ -9,9 +9,9 @@ export default class TailorFetch {
      * @param method {string} Request method to make request with
      * @param options {IRequestOptions} Request options
      * 
-     * @returns {TailorResponse | undefined}
+     * @returns {TailorResponse}
      */
-    static async make(urlStr: string, method: 'GET'|'POST'|'PUT'|'PATCH'|'DELETE'|'CONNECT'|'HEAD'|'OPTIONS', options?: IRequestOptions): Promise<TailorResponse | undefined> {
+    static async make(urlStr: string, method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'CONNECT' | 'HEAD' | 'OPTIONS', options?: IRequestOptions): Promise<TailorResponse> {
         const request = new Request(urlStr, method, { ...options });
 
         return await request.make();
@@ -23,9 +23,9 @@ export default class TailorFetch {
      * @param urlStr {string} Url to make request to
      * @param options {IRequestOptions} Request options to add to request
      * 
-     * @returns {TailorResponse | undefined}
-     */ 
-    static async GET(urlStr: string, options?: IRequestOptions): Promise<TailorResponse | undefined> {
+     * @returns {TailorResponse}
+     */
+    static async GET(urlStr: string, options?: IRequestOptions): Promise<TailorResponse> {
         const request = new Request(urlStr, 'GET', { ...options });
 
         return await request.make();
@@ -38,9 +38,9 @@ export default class TailorFetch {
      * @param urlStr {string} Url to make request to
      * @param options {IRequestOptions} Request options to add to request
      * 
-     * @returns {TailorResponse | undefined}
+     * @returns {TailorResponse}
      */
-    static async POST(urlStr: string, options?: IRequestOptions): Promise<TailorResponse | undefined> {
+    static async POST(urlStr: string, options?: IRequestOptions): Promise<TailorResponse> {
         const request = new Request(urlStr, 'POST', { ...options });
 
         return await request.make();
@@ -52,9 +52,9 @@ export default class TailorFetch {
      * @param urlStr {string} Url to make request to
      * @param options {IRequestOptions} Request options to add to request
      * 
-     * @returns {TailorResponse | undefined}
+     * @returns {TailorResponse}
      */
-    static async PUT(urlStr: string, options?: IRequestOptions): Promise<TailorResponse | undefined> {
+    static async PUT(urlStr: string, options?: IRequestOptions): Promise<TailorResponse> {
         const request = new Request(urlStr, 'PUT', { ...options });
 
         return await request.make();
@@ -66,9 +66,9 @@ export default class TailorFetch {
      * @param urlStr {string} Url to make request to
      * @param options {IRequestOptions} Options to make request to
      * 
-     * @returns {TailorResponse | undefined}
+     * @returns {TailorResponse}
      */
-    static async PATCH(urlStr: string, options?: IRequestOptions): Promise<TailorResponse | undefined> {
+    static async PATCH(urlStr: string, options?: IRequestOptions): Promise<TailorResponse> {
         const request = new Request(urlStr, 'PATCH', { ...options });
 
         return await request.make();
@@ -80,18 +80,12 @@ export default class TailorFetch {
      * @param urlStr {string} Url to make request to
      * @param options {IRequestOptions} Options to add to request
      * 
-     * @returns {TailorResponse | undefined}
+     * @returns {TailorResponse}
      */
-    static async DELETE(urlStr: string, options?: IRequestOptions): Promise<TailorResponse | undefined> {
+    static async DELETE(urlStr: string, options?: IRequestOptions): Promise<TailorResponse> {
         const request = new Request(urlStr, 'DELETE', { ...options });
 
         return await request.make();
-    }
-
-    static async CONNECT(urlStr: string, options?: IRequestOptions): Promise<TailorResponse | undefined> {
-        const request = new Request(urlStr, 'CONNECT', { ...options });
-
-        return request.make();
     }
 
     /**
@@ -99,9 +93,9 @@ export default class TailorFetch {
      * @param urlStr {string} URL to make a request to 
      * @param options {IRequestOptions} Options to add to request
      * 
-     * @returns {TailorResponse | undefined} 
+     * @returns {TailorResponse} 
      */
-    static async HEAD(urlStr: string, options?: IRequestOptions): Promise<TailorResponse | undefined> {
+    static async HEAD(urlStr: string, options?: IRequestOptions): Promise<TailorResponse> {
         const request = new Request(urlStr, 'HEAD', { ...options });
 
         return request.make();
@@ -112,9 +106,9 @@ export default class TailorFetch {
      * @param urlStr {string} URL to make request to
      * @param options {IRequestOptions} Options to add to request
      * 
-     * @returns {TailorResponse | undefined}
+     * @returns {TailorResponse}
      */
-    static async OPTIONS(urlStr: string, options?: IRequestOptions): Promise<TailorResponse | undefined> {
+    static async OPTIONS(urlStr: string, options?: IRequestOptions): Promise<TailorResponse> {
         const request = new Request(urlStr, 'OPTIONS', { ...options });
 
         return await request.make();

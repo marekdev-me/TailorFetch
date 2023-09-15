@@ -39,7 +39,7 @@ export default class Request {
 	 *
 	 * @private
 	 */
-	private response: Response | undefined = undefined;
+	private response!: Response;
 
 	/**
 	 * Attempts count
@@ -58,9 +58,9 @@ export default class Request {
 	/**
 	 * Make an HTTP response to remote URL
 	 * 
-	 * @returns {TailorResponse | undefined}
+	 * @returns {TailorResponse}
 	 */
-	async make(): Promise<TailorResponse | undefined> {
+	async make(): Promise<TailorResponse> {
 		const requestOptionsObject = this.buildRequestOptions();
 
 		try {
@@ -285,7 +285,7 @@ export default class Request {
 		return false;
 	}
 
-	private async retry(): Promise<TailorResponse | undefined> {
+	private async retry(): Promise<TailorResponse> {
 		const maxRetries = this.requestOptions.retry?.maxRetries || 0;
 		const retryDelay = this.requestOptions.retry?.retryDelay || 0;
 
