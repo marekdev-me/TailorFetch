@@ -83,7 +83,7 @@ await TailorFetch.POST(url, options);
 > **Warning**
 > Built-in cache might be unstable and might return live results at all times
 
-By default when cache option is specified with only expiry time and no redis client option has been specified then internal cache will be used.
+By default, when cache option is specified with only expiry time and no redis client option has been specified then internal cache will be used.
 
 ### Redis Cache
 You can use Redis cache with GET requests by supplying Redis client to request cache options as follows.
@@ -113,10 +113,11 @@ await TailorFetch.GET('https://dummyjson.com/products/1', options);
 You can define a custom request transformer by extending the `BaseRequestInterceptor` class and overriding the `intercept` method.
 Modify headers, add authentication, or enhance the request before it's sent.
 
+Class based interceptor:
 ```typescript
-import {BaseRequestInterceptor, IRequestOptions} from 'tailorfetch';
+import {BaseRequestInterceptor} from 'tailorfetch';
 
-class MyInterceptor extends BaseRequestInterceptor {
+class MyInterceptor implements BaseRequestInterceptor {
    intercept(requestOptions: RequestInit) {
       // Custom intercept logic
       
@@ -131,23 +132,53 @@ const options = {
 await TailorFetch.GET(url, options);
 ```
 
+Function based interceptor:
+```typescript
+import {IRequestOptions} from 'tailorfetch';
+
+const options = {
+   requestInterceptor: (requestOptions: RequestInit): RequestInit => {
+       
+       // Custom request interceptor logic
+       return requestOptions;
+   },
+};
+
+await TailorFetch.GET(url, options);
+```
+
 ## Custom Response Transformer
 
 You can define a custom response transformer by extending the `BaseTransform` class and overriding the `transform` method.
 
+Class based transformer:
 ```typescript
 import TailorFetch, {BaseTransform, IRequestOptions} from 'tailorfetch';
 
-class MyTransformer extends BaseTransform {
-   transform(responseData: string | ReadableStream<any>, requestOptions: IRequestOptions) {
+class MyTransformer implements BaseTransform {
+   transform(responseData: any, requestOptions: IRequestOptions) {
       // Custom transformation logic
       return transformedData;
    }
 }
 
 const options = {
-   transformResponse: new MyTransformer(),
+   transformResponse: new MyTransformer,
 };
+
+await TailorFetch.GET(url, options);
+```
+
+Function based transformer:
+```typescript
+import TailorFetch, {BaseTransform, IRequestOptions} from 'tailorfetch';
+
+const options = {
+   transformResponse: (responseData: any, requestOptions: IRequestOptions): any => {
+      // Custom transformation logic
+      return transformedData;
+   }
+}
 
 await TailorFetch.GET(url, options);
 ```
@@ -155,10 +186,10 @@ await TailorFetch.GET(url, options);
 ## Helper Functions
 
 ### `TailorResponse`
-Following helper functions are awailable on `TailorResponse` returned when request is made
+Following helper functions are available on `TailorResponse` returned when request is made
 
    - `json()` - Returns parsed JSON data, only if `parseJSON` request option is false
-   - `successful()` - Returns boolean wether request was successful
+   - `successful()` - Returns boolean whether request was successful
    - `failed()` - Returns boolean whether request has failed
    - `clientError()` - Returns boolean whether an error was client error
    - `serverError()` - Returns boolean whether an error was server error

@@ -9,8 +9,8 @@ export default interface IRequestOptions {
     headers?: { [key: string]: string };
     queryParams?: { [key: string]: string };
     timeout?: number;
-    transformResponse?: BaseTransform;
-    requestInterceptor?: BaseRequestInterceptor,
+    transformResponse?: ((responseData: any, requestOptions: IRequestOptions) => any) | BaseTransform;
+    requestInterceptor?: ((requestOptions: RequestInit) => RequestInit) | BaseRequestInterceptor,
     body?: Blob | BufferSource | FormData | URLSearchParams | ReadableStream<Uint8Array> | string | null;
     json?: boolean;
     requestMode?: "navigate" | "same-origin" | "no-cors" | "cors",

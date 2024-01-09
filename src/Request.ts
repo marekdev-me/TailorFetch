@@ -46,7 +46,7 @@ export default class Request {
 	 *
 	 * @private
 	 */
-	private retryCount = 0;
+	// private retryCount = 0;
 
 	constructor(urlStr: string, method: string, requestOptions: IRequestOptions, signal?: AbortSignal) {
 		this.urlStr = new URL(urlStr);
@@ -103,7 +103,12 @@ export default class Request {
 
 		// Intercept request
 		if (this.requestOptions.requestInterceptor) {
-			const modifiedRequestOptions = this.requestOptions.requestInterceptor.intercept(requestOptionsObject);
+			let modifiedRequestOptions;
+			if (typeof this.requestOptions.requestInterceptor === 'function') {
+				modifiedRequestOptions = modifiedRequestOptions = this.requestOptions.requestInterceptor(requestOptionsObject);
+			} else {
+				modifiedRequestOptions = modifiedRequestOptions = this.requestOptions.requestInterceptor.intercept(requestOptionsObject);
+			}
 			Object.assign(requestOptionsObject, modifiedRequestOptions);
 		}
 
@@ -112,10 +117,10 @@ export default class Request {
 
 	/**
 	 * Handle request processing progress reporting
-	 * 
-	 * @param body {ReadableStream}
-	 * 
-	 * @returns {TailorResponse} 
+	 *
+	 *
+	 * @returns {TailorResponse}
+	 * @param response
 	 */
 	private async handleProgress(response: Response): Promise<TailorResponse> {
 		const contentLengthHeader = response.headers.get('Content-Length');
@@ -140,7 +145,7 @@ export default class Request {
 						loadedBytes += value?.length || 0;
 
 						if (progressCallback) {
-							// Calculate and report progress as a precentage
+							// Calculate and report progress as a percentage
 							const progress = (loadedBytes / totalBytes) * 100;
 							progressCallback(loadedBytes, totalBytes, progress);
 						}
@@ -170,7 +175,17 @@ export default class Request {
 
 		// Apply transformation if a transform is provided
 		if (this.requestOptions.transformResponse) {
-			const transformedResponse = this.requestOptions.transformResponse.transform(this.transformResponse(responseAsString), this.requestOptions);
+			let transformedResponse;
+
+			// FIXME: Simplify me
+			if (typeof this.requestOptions.transformResponse === 'function') {
+				transformedResponse =
+					this.requestOptions.transformResponse(this.transformResponse(responseAsString), this.requestOptions);
+			} else {
+				transformedResponse =
+					this.requestOptions.transformResponse.transform(this.transformResponse(responseAsString), this.requestOptions);
+			}
+
 			return new TailorResponse(transformedResponse, this.response, this.requestOptions);
 		}
 
@@ -235,10 +250,19 @@ export default class Request {
 
 		// Transform the response if transform is provided
 		if (this.requestOptions.transformResponse) {
-			const transformedResponse = this.requestOptions.transformResponse.transform(
-				this.requestOptions.json && responseBody ? JSON.parse(responseBody) : responseBody,
-				this.requestOptions
-			);
+
+			let transformedResponse;
+			const body = this.requestOptions.json && responseBody ? JSON.parse(responseBody) : responseBody;
+
+			// FIXME: Simplify me
+			if (typeof this.requestOptions.transformResponse === 'function') {
+				transformedResponse =
+					this.requestOptions.transformResponse(body, this.requestOptions);
+			} else {
+				transformedResponse =
+					this.requestOptions.transformResponse.transform(body, this.requestOptions);
+			}
+
 
 			// Cache the transformed response (if caching is enabled)
 			if (this.requestOptions.cache) {
@@ -277,12 +301,7 @@ export default class Request {
 			return true;
 		}
 
-		if (error instanceof ConnectionTimeoutError) {
-			// Retry for timeouts.
-			return true;
-		}
-
-		return false;
+		return error instanceof ConnectionTimeoutError;
 	}
 
 	private async retry(): Promise<TailorResponse> {
