@@ -254,10 +254,12 @@ export default class Request {
 			// FIXME: Simplify me
 			if (typeof this.requestOptions.transformResponse === 'function') {
 				transformedResponse =
-					transformedResponse = this.requestOptions.transformResponse(body, this.requestOptions);
+					this.requestOptions.transformResponse(body, this.requestOptions);
 			} else {
-				this.requestOptions.transformResponse.transform(body, this.requestOptions);
+				transformedResponse =
+					this.requestOptions.transformResponse.transform(body, this.requestOptions);
 			}
+
 
 			// Cache the transformed response (if caching is enabled)
 			if (this.requestOptions.cache) {
@@ -296,12 +298,7 @@ export default class Request {
 			return true;
 		}
 
-		if (error instanceof ConnectionTimeoutError) {
-			// Retry for timeouts.
-			return true;
-		}
-
-		return false;
+		return error instanceof ConnectionTimeoutError;
 	}
 
 	private async retry(): Promise<TailorResponse> {
