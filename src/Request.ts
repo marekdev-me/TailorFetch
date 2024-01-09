@@ -3,8 +3,6 @@ import Cache from "./Cache";
 import TailorResponse from "./Response";
 import NetworkError from "./errors/NetworkError";
 import ConnectionTimeoutError from "./errors/ConnectionTimeoutError";
-import BaseTransform from "./BaseTransform";
-import Base = Mocha.reporters.Base;
 
 export default class Request {
 
@@ -48,7 +46,7 @@ export default class Request {
 	 *
 	 * @private
 	 */
-	private retryCount = 0;
+	// private retryCount = 0;
 
 	constructor(urlStr: string, method: string, requestOptions: IRequestOptions, signal?: AbortSignal) {
 		this.urlStr = new URL(urlStr);
