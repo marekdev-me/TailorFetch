@@ -9,7 +9,7 @@ export default interface IRequestOptions {
     headers?: { [key: string]: string };
     queryParams?: { [key: string]: string };
     timeout?: number;
-    transformResponse?: BaseTransform;
+    transformResponse?: ((responseData: any, requestOptions: IRequestOptions) => any) | BaseTransform;
     requestInterceptor?: BaseRequestInterceptor,
     body?: Blob | BufferSource | FormData | URLSearchParams | ReadableStream<Uint8Array> | string | null;
     json?: boolean;

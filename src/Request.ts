@@ -3,6 +3,8 @@ import Cache from "./Cache";
 import TailorResponse from "./Response";
 import NetworkError from "./errors/NetworkError";
 import ConnectionTimeoutError from "./errors/ConnectionTimeoutError";
+import BaseTransform from "./BaseTransform";
+import Base = Mocha.reporters.Base;
 
 export default class Request {
 
@@ -112,10 +114,10 @@ export default class Request {
 
 	/**
 	 * Handle request processing progress reporting
-	 * 
-	 * @param body {ReadableStream}
-	 * 
-	 * @returns {TailorResponse} 
+	 *
+	 *
+	 * @returns {TailorResponse}
+	 * @param response
 	 */
 	private async handleProgress(response: Response): Promise<TailorResponse> {
 		const contentLengthHeader = response.headers.get('Content-Length');
@@ -140,7 +142,7 @@ export default class Request {
 						loadedBytes += value?.length || 0;
 
 						if (progressCallback) {
-							// Calculate and report progress as a precentage
+							// Calculate and report progress as a percentage
 							const progress = (loadedBytes / totalBytes) * 100;
 							progressCallback(loadedBytes, totalBytes, progress);
 						}
@@ -170,7 +172,17 @@ export default class Request {
 
 		// Apply transformation if a transform is provided
 		if (this.requestOptions.transformResponse) {
-			const transformedResponse = this.requestOptions.transformResponse.transform(this.transformResponse(responseAsString), this.requestOptions);
+			let transformedResponse;
+
+			// FIXME: Simplify me
+			if (typeof this.requestOptions.transformResponse === 'function') {
+				transformedResponse =
+					this.requestOptions.transformResponse(this.transformResponse(responseAsString), this.requestOptions);
+			} else {
+				transformedResponse =
+					this.requestOptions.transformResponse.transform(this.transformResponse(responseAsString), this.requestOptions);
+			}
+
 			return new TailorResponse(transformedResponse, this.response, this.requestOptions);
 		}
 
@@ -235,10 +247,17 @@ export default class Request {
 
 		// Transform the response if transform is provided
 		if (this.requestOptions.transformResponse) {
-			const transformedResponse = this.requestOptions.transformResponse.transform(
-				this.requestOptions.json && responseBody ? JSON.parse(responseBody) : responseBody,
-				this.requestOptions
-			);
+
+			let transformedResponse;
+			const body = this.requestOptions.json && responseBody ? JSON.parse(responseBody) : responseBody;
+
+			// FIXME: Simplify me
+			if (typeof this.requestOptions.transformResponse === 'function') {
+				transformedResponse =
+					transformedResponse = this.requestOptions.transformResponse(body, this.requestOptions);
+			} else {
+				this.requestOptions.transformResponse.transform(body, this.requestOptions);
+			}
 
 			// Cache the transformed response (if caching is enabled)
 			if (this.requestOptions.cache) {
