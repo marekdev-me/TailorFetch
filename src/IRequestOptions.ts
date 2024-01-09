@@ -10,7 +10,7 @@ export default interface IRequestOptions {
     queryParams?: { [key: string]: string };
     timeout?: number;
     transformResponse?: ((responseData: any, requestOptions: IRequestOptions) => any) | BaseTransform;
-    requestInterceptor?: BaseRequestInterceptor,
+    requestInterceptor?: ((requestOptions: RequestInit) => RequestInit) | BaseRequestInterceptor,
     body?: Blob | BufferSource | FormData | URLSearchParams | ReadableStream<Uint8Array> | string | null;
     json?: boolean;
     requestMode?: "navigate" | "same-origin" | "no-cors" | "cors",

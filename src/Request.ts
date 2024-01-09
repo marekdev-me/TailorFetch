@@ -105,7 +105,12 @@ export default class Request {
 
 		// Intercept request
 		if (this.requestOptions.requestInterceptor) {
-			const modifiedRequestOptions = this.requestOptions.requestInterceptor.intercept(requestOptionsObject);
+			let modifiedRequestOptions;
+			if (typeof this.requestOptions.requestInterceptor === 'function') {
+				modifiedRequestOptions = modifiedRequestOptions = this.requestOptions.requestInterceptor(requestOptionsObject);
+			} else {
+				modifiedRequestOptions = modifiedRequestOptions = this.requestOptions.requestInterceptor.intercept(requestOptionsObject);
+			}
 			Object.assign(requestOptionsObject, modifiedRequestOptions);
 		}
 
