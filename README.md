@@ -116,7 +116,7 @@ Modify headers, add authentication, or enhance the request before it's sent.
 ```typescript
 import {BaseRequestInterceptor, IRequestOptions} from 'tailorfetch';
 
-class MyInterceptor extends BaseRequestInterceptor {
+class MyInterceptor implements BaseRequestInterceptor {
    intercept(requestOptions: RequestInit) {
       // Custom intercept logic
       
@@ -135,19 +135,34 @@ await TailorFetch.GET(url, options);
 
 You can define a custom response transformer by extending the `BaseTransform` class and overriding the `transform` method.
 
+Class based transformer:
 ```typescript
 import TailorFetch, {BaseTransform, IRequestOptions} from 'tailorfetch';
 
-class MyTransformer extends BaseTransform {
-   transform(responseData: string | ReadableStream<any>, requestOptions: IRequestOptions) {
+class MyTransformer implements BaseTransform {
+   transform(responseData: any, requestOptions: IRequestOptions) {
       // Custom transformation logic
       return transformedData;
    }
 }
 
 const options = {
-   transformResponse: new MyTransformer(),
+   transformResponse: new MyTransformer,
 };
+
+await TailorFetch.GET(url, options);
+```
+
+Function based transformer:
+```typescript
+import TailorFetch, {BaseTransform, IRequestOptions} from 'tailorfetch';
+
+const options = {
+   transformResponse: (responseData: any, requestOptions: IRequestOptions): any => {
+      // Custom transformation logic
+      return transformedData;
+   }
+}
 
 await TailorFetch.GET(url, options);
 ```
