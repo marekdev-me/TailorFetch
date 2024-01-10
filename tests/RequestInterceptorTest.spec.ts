@@ -1,6 +1,5 @@
 import TailorFetch, {IRequestOptions, TailorResponse, BaseRequestInterceptor} from "../src";
-import {assert, expect} from "chai";
-
+import {assert} from "chai";
 
 const makeRequest = async (url: string, reqOptions: IRequestOptions): Promise<TailorResponse> => {
     return await TailorFetch.GET(url, reqOptions);
@@ -10,9 +9,16 @@ class RequestInterceptor implements BaseRequestInterceptor {
     intercept(requestOptions: RequestInit): RequestInit {
         const headers = new Headers(requestOptions.headers);
 
-        headers.set("just", "set");
-
+        headers.set('Content-Type','application/json');
         requestOptions.headers = headers;
+
+        if (typeof requestOptions.body === "string") {
+            const bodyData = JSON.parse(requestOptions.body);
+
+            bodyData.title = "intercepted name";
+
+            requestOptions.body = JSON.stringify(bodyData);
+        }
 
         return requestOptions;
     }
@@ -20,58 +26,54 @@ class RequestInterceptor implements BaseRequestInterceptor {
 
 describe("request interceptor test", () => {
     it("should update request using functional interceptor", async () => {
-        const url = "http://localhost:3000/headers";
+        const url = "https://dummyjson.com/products/add";
         const requestOptions: IRequestOptions = {
             json: true,
+            body: JSON.stringify({
+                title: 'example product',
+                price: 300.00
+            }),
             requestInterceptor: (requestOptions: RequestInit): RequestInit => {
-
                 const headers = new Headers(requestOptions.headers);
 
-                headers.set(
-                    "just", "set"
-                );
-
+                headers.set('Content-Type','application/json');
                 requestOptions.headers = headers;
+
+                if (typeof requestOptions.body === "string") {
+                    const bodyData = JSON.parse(requestOptions.body);
+
+                    bodyData.title = "intercepted name";
+
+                    requestOptions.body = JSON.stringify(bodyData);
+                }
 
                 return requestOptions;
             }
         };
 
-        // Act: Perform the GET request and receive response
-        const response = await makeRequest(url, requestOptions);
+        const response = await TailorFetch.POST(url, requestOptions);
 
-        // Assert: Verify the expected outcomes
+        assert.equal(response.successful(), true, "Functional interceptor POST failed");
 
-        // Check if the response is successful (status code 2xx).
-        assert.equal(response.successful(), true, "GET request failed");
-
-        // Check if response is an instance of TailorResponse
-        assert.instanceOf(response, TailorResponse);
-
-        // console.log(response.data.hasOwnProperty('just'));
-
-        expect(Object.keys(response.data)).to.include.members(['just']);
+        assert.equal(response.data.title, "intercepted name", "Functional interceptor data change failed");
     });
 
     // Class Based
     it("should update request using class based interceptor", async () => {
-        const url = "http://localhost:3000/headers";
+        const url = "https://dummyjson.com/products/add";
         const requestOptions: IRequestOptions = {
             json: true,
+            body: JSON.stringify({
+                title: 'example product',
+                price: 300.00
+            }),
             requestInterceptor: new RequestInterceptor
         };
 
-        // Act: Perform the GET request and receive response
-        const response = await makeRequest(url, requestOptions);
+        const response = await TailorFetch.POST(url, requestOptions);
 
-        // Assert: Verify the expected outcomes
+        assert.equal(response.successful(), true, "Class interceptor POST failed");
 
-        // Check if the response is successful (status code 2xx).
-        assert.equal(response.successful(), true, "GET request failed");
-
-        // Check if response is an instance of TailorResponse
-        assert.instanceOf(response, TailorResponse);
-
-        expect(Object.keys(response.data)).to.include.members(['just']);
+        assert.equal(response.data.title, "intercepted name", "Class interceptor data change failed");
     });
 });

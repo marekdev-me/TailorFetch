@@ -25,7 +25,7 @@ export default class TailorResponse {
     /**
      * Request configuration
      */
-    public config: IRequestOptions;
+    public requestOptions: IRequestOptions;
 
     /**
      * Whether returned response was cached or not
@@ -37,12 +37,12 @@ export default class TailorResponse {
      */
     public response: Response | undefined;
 
-    constructor(data: any, response: Response | undefined, config: IRequestOptions, isCached: boolean = false) {
+    constructor(data: any, response: Response | undefined, requestOptions: IRequestOptions, isCached: boolean = false) {
         this.data = data;
         this.status = response?.status;
         this.statusText = response?.statusText;
         this.headers = response?.headers;
-        this.config = config;
+        this.requestOptions = requestOptions;
         this.isCached = isCached;
         this.response = response;
     }
@@ -54,7 +54,7 @@ export default class TailorResponse {
             status: this.status,
             statusText: this.statusText,
             headers: this.headers,
-            config: this.config,
+            requestOptions: this.requestOptions,
         }
     }
 
@@ -66,7 +66,7 @@ export default class TailorResponse {
      * Return response in JSON format
      */
     json(): string | undefined {
-        if (!this.config.json && this.data) {
+        if (!this.requestOptions.json && this.data) {
             return JSON.parse(this.data);
         }
 
