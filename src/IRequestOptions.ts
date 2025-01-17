@@ -6,6 +6,7 @@ import BaseRequestInterceptor from "./BaseRequestInterceptor";
 type redisClient = ReturnType<typeof createClient>;
 
 export default interface IRequestOptions {
+    name?: string,
     headers?: { [key: string]: string };
     queryParams?: { [key: string]: string };
     timeout?: number;
