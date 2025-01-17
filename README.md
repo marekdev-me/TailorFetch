@@ -76,6 +76,20 @@ await TailorFetch.POST(url, options);
    - `maxRetries`          -  Maximum number of times to attempt to make an HTTP request
    - `retryDelay`          -  Number of milliseconds to wait between attempts
 
+## Concurrent Requests
+TailorFetch supports making concurrent HTTP requests out of the box.
+
+```typescript
+const responses: TailorResponse[] = await TailorFetch.concurrent([
+   {url: 'https://dummyjson.com/products', method: 'GET', options: {name: 'products', json: true}},
+   {url: 'https://dummyjson.com/products/1', method: 'GET', options: {name: 'product', json: true}},
+   {url: 'https://dummyjson.com/carts', method: 'GET', options: {name: 'carts', json: true}},
+]);
+```
+
+You can name each request by supplying the `name` option
+
+
 ## Cache
 
 ### Built-in cache

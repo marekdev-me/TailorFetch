@@ -2,6 +2,8 @@ import IRequestOptions from "./IRequestOptions";
 
 export default class TailorResponse {
 
+    public name: string | undefined = 'TailorResponse';
+
     /**
      * Response data
      */
@@ -38,6 +40,7 @@ export default class TailorResponse {
     public response: Response | undefined;
 
     constructor(data: any, response: Response | undefined, requestOptions: IRequestOptions, isCached: boolean = false) {
+        this.name = requestOptions.name
         this.data = data;
         this.status = response?.status;
         this.statusText = response?.statusText;
@@ -50,6 +53,7 @@ export default class TailorResponse {
     // TODO: This is probably not needed here
     toObject() {
         return {
+            name: this.name,
             data: this.data,
             status: this.status,
             statusText: this.statusText,
@@ -167,7 +171,7 @@ export default class TailorResponse {
     /**
      * 401 Unauthorized
      * 
-     * @returns {boolean} Wether the request status was 401
+     * @returns {boolean} Weather the request status was 401
      */
     unauthorized(): boolean {
         return this.status == 401;

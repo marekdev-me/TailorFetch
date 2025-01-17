@@ -8,7 +8,7 @@ describe('make GET, POST, PUT, PATCH, DELETE requests', () => {
       const url = "https://dummyjson.com/products/1";
       const requestOptions = { json: true };
 
-      // Act: Perform the GET request and recieve response
+      // Act: Perform the GET request and receive response
       const response: TailorResponse = await TailorFetch.GET(url, requestOptions);
 
       // Assert: Verify the expected outcomes
@@ -16,10 +16,10 @@ describe('make GET, POST, PUT, PATCH, DELETE requests', () => {
       // Check if the response is successful (status code 2xx).
       assert.equal(response.successful(), true, "GET request failed");
 
-      // Check if response if an instance of TailorResponse
+      // Check if response is an instance of TailorResponse
       assert.instanceOf(response, TailorResponse);
 
-      // Check that data is recieved and is not undefined
+      // Check that data is received and is not undefined
       expect(response.data).to.not.be.undefined;
    });
 
@@ -36,7 +36,7 @@ describe('make GET, POST, PUT, PATCH, DELETE requests', () => {
          })
       };
 
-      // Act: Perform the GET request and recieve response
+      // Act: Perform the GET request and receive response
       const response: TailorResponse = await TailorFetch.POST(url, requestOptions);
 
       // Assert: Verify the expected outcomes
@@ -44,7 +44,7 @@ describe('make GET, POST, PUT, PATCH, DELETE requests', () => {
       // Check if the response is successful (status code 2xx)
       assert.equal(response.successful(), true, "POST request failed");
 
-      // Check if response if an instance of TailorResponse
+      // Check if response is an instance of TailorResponse
       assert.instanceOf(response, TailorResponse);
 
       // Check that data is received and is not undefined
@@ -67,7 +67,7 @@ describe('make GET, POST, PUT, PATCH, DELETE requests', () => {
          })
       };
 
-      // Act: Perform the GET request and recieve response
+      // Act: Perform the GET request and receive response
       const response: TailorResponse = await TailorFetch.PUT(url, requestOptions);
 
       // Assert: Verify the expected outcomes
@@ -75,7 +75,7 @@ describe('make GET, POST, PUT, PATCH, DELETE requests', () => {
       // Check if the response is successful (status code 2xx)
       assert.equal(response.successful(), true, 'PUT request has failed');
 
-      // Check if response if an instance of TailorResponse
+      // Check if response is an instance of TailorResponse
       assert.instanceOf(response, TailorResponse);
 
       // Check that data is received and is not undefined
@@ -98,7 +98,7 @@ describe('make GET, POST, PUT, PATCH, DELETE requests', () => {
          })
       };
 
-      // Act: Perform the GET request and recieve response
+      // Act: Perform the GET request and receive response
       const response: TailorResponse = await TailorFetch.PATCH(url, requestOptions);
 
       // Assert: Verify the expected outcomes

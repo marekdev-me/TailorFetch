@@ -2,7 +2,25 @@ import IRequestOptions from "./IRequestOptions";
 import Request from "./Request";
 import TailorResponse from "./Response";
 
+type RequestMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'CONNECT' | 'HEAD' | 'OPTIONS';
+
 export default class TailorFetch {
+
+    /**
+     * Allow concurrent requests
+     *
+     * @param requests
+     */
+    static async concurrent(requests: { url: string; method: RequestMethod, options?: IRequestOptions }[]): Promise<TailorResponse[]> {
+        // Map requests to TailorFetch.make calls
+        const promises = requests.map((request) =>
+            TailorFetch.make(request.url, request.method, request.options)
+        );
+
+        // Use Promise.all to wait for all requests to complete
+        return Promise.all(promises);
+    }
+
     /**
      * 
      * @param urlStr {string} Url to make request to
@@ -11,7 +29,7 @@ export default class TailorFetch {
      * 
      * @returns {TailorResponse}
      */
-    static async make(urlStr: string, method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'CONNECT' | 'HEAD' | 'OPTIONS', options?: IRequestOptions): Promise<TailorResponse> {
+    static async make(urlStr: string, method: RequestMethod, options?: IRequestOptions): Promise<TailorResponse> {
         const request = new Request(urlStr, method, { ...options });
 
         return await request.make();
