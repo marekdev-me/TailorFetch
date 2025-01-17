@@ -10,14 +10,14 @@ export default class ResponseInspector {
         console.log('----------------------BEGIN RESPONSE INSPECTOR--------------------------');
 
         if (response.successful()) {
-            console.log(`  Request Name: ${response.requestOptions.name ?? 'Unknown'}`);
+            console.log(`  Request Name: ${response.name ?? 'Unknown'}`);
             console.log(`  Status: ${response.status}`);
             console.log(`  Headers: ${JSON.stringify(response.headers, null, 2)}`);
             console.log(`  Data: ${JSON.stringify(response.data, null, 2)}`);
         }
 
         if (response.failed()) {
-            console.error(`  Request Name: ${response.requestOptions.name ?? 'Unknown'}`);
+            console.error(`  Request Name: ${response.name ?? 'Unknown'}`);
             console.error(`  Error: Response failed`);
             console.error(`  Status: ${response.status}`);
             console.error(`  Headers: ${JSON.stringify(response.headers, null, 2)}`);
